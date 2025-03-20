@@ -19,7 +19,8 @@ services:
         ports:
             - "8989:3306"
         volumes:
-            - "./data/db/mysql:/var/lib/mysql"
+            - mysql_data:/var/lib/mysql
+            - ./docker/mysql/init:/docker-entrypoint-initdb.d
         networks:
             - backend-network
         healthcheck:
@@ -98,3 +99,7 @@ services:
             - backend-network
         profiles:
             - ${PHPMYADMIN_PROFILE:-dev}
+
+volumes:
+  mysql_data:
+    name: ${PROJECT_NAME:-docker_nginx_php_mysql}_mysql_data
