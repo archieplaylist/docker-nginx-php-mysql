@@ -54,6 +54,8 @@ help:
 	@echo "  ${YELLOW}phpmd${NC}                Analyze code with PHP Mess Detector"
 	@echo ""
 	@echo "${GREEN}Database commands:${NC}"
+	@echo "  ${YELLOW}db-volume-create${NC}     Create MySQL data volume"
+	@echo "  ${YELLOW}db-volume-remove${NC}     Remove MySQL data volume (deletes all data)"
 	@echo "  ${YELLOW}db-dump${NC}              Create backup of all databases"
 	@echo "  ${YELLOW}db-restore${NC}           Restore backup of all databases"
 	@echo "  ${YELLOW}db-connect${NC}           Connect to MySQL shell"
@@ -62,6 +64,7 @@ help:
 	@echo "  ${YELLOW}gen-certs${NC}            Generate SSL certificates"
 	@echo "  ${YELLOW}enable-ssl${NC}           Enable SSL in Nginx configuration"
 	@echo "  ${YELLOW}clean${NC}                Clean directories for reset"
+	@echo "  ${YELLOW}clean-all${NC}            Clean all data including volumes"
 	@echo "  ${YELLOW}apidoc${NC}               Generate API documentation"
 	@echo ""
 	@echo "${GREEN}Framework commands:${NC}"
@@ -157,7 +160,18 @@ phpmd:
 	@echo "${GREEN}Analysis completed!${NC}"
 
 # Database commands
-.PHONY: db-dump db-restore db-connect
+.PHONY: db-volume-create db-volume-remove db-dump db-restore db-connect 
+
+db-volume-create:
+	@echo "${BLUE}Creating MySQL data volume...${NC}"
+	@docker volume create ${PROJECT_NAME:-docker_nginx_php_mysql}_mysql_data
+	@echo "${GREEN}MySQL data volume created!${NC}"
+
+db-volume-remove:
+	@echo "${BLUE}Removing MySQL data volume...${NC}"
+	@docker volume rm ${PROJECT_NAME:-docker_nginx_php_mysql}_mysql_data
+	@echo "${GREEN}MySQL data volume removed!${NC}"
+	@echo "${YELLOW}Warning: All database data has been permanently deleted.${NC}"
 
 db-dump:
 	@echo "${BLUE}Creating database backup...${NC}"
@@ -188,7 +202,7 @@ db-connect:
 	fi
 
 # Utility commands
-.PHONY: gen-certs enable-ssl clean apidoc reset-owner
+.PHONY: gen-certs enable-ssl clean clean-all apidoc reset-owner
 
 gen-certs:
 	@echo "${BLUE}Generating SSL certificates...${NC}"
@@ -225,6 +239,11 @@ clean:
 	@rm -Rf $(APP_ROOT)/report
 	@rm -Rf etc/ssl/*
 	@echo "${GREEN}Clean completed!${NC}"
+
+clean-all: clean
+	@echo "${BLUE}Cleaning volumes...${NC}"
+	@$(MAKE) db-volume-remove || true
+	@echo "${GREEN}Volumes cleaned!${NC}"
 
 apidoc:
 	@echo "${BLUE}Generating API documentation...${NC}"
