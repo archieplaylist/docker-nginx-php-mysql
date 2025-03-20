@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, v2-dev ]
+  pull_request:
+    branches: [ master, v2-dev ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+      
+    - name: Set up environment
+      run: |
+        cp .env.dev .env
+      
+    - name: Start Docker environment
+      run: docker-compose up -d
+      
+    - name: Wait for services to be ready
+      run: |
+        echo "Waiting for services to be ready..."
+        sleep 30
+        
+    - name: Generate API documentation
+      run: make apidoc
+      
+    - name: Generate SSL certificates
+      run: make gen-certs
+      
+    - name: Database operations
+      run: |
+        make db-dump
+        make db-restore
+        
+    - name: Code quality checks
+      run: make phpmd
+      
+    - name: Run tests
+      run: make test
+      
+    - name: Stop Docker environment
+      if: always()
+      run: make docker-stop
