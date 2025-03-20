@@ -231,13 +231,14 @@ enable-ssl:
 
 clean:
 	@echo "${BLUE}Cleaning directories...${NC}"
+	@rm -Rf .phpdoc
+	@rm -Rf etc/ssl/*
 	@rm -Rf data/db/mysql/*
 	@rm -Rf $(MYSQL_DUMPS_DIR)/*
 	@rm -Rf $(APP_ROOT)/vendor
 	@rm -Rf $(APP_ROOT)/composer.lock
 	@rm -Rf $(APP_ROOT)/doc
 	@rm -Rf $(APP_ROOT)/report
-	@rm -Rf etc/ssl/*
 	@echo "${GREEN}Clean completed!${NC}"
 
 clean-all: clean
