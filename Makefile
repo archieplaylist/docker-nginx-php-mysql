@@ -239,13 +239,19 @@ reset-owner:
 .PHONY: install-symfony install-laravel
 
 install-symfony:
-	@echo "${BLUE}Installing Symfony...${NC}"
-	@$(DOCKER_EXEC) $(PHP_CONTAINER) composer create-project symfony/skeleton ./symfony-app
-	@echo "${GREEN}Symfony installed!${NC}"
-	@echo "${YELLOW}Don't forget to adjust your Nginx configuration.${NC}"
+	@echo "${BLUE}Installing Symfony framework...${NC}"
+	@$(DOCKER_EXEC) $(PHP_CONTAINER) composer create-project symfony/skeleton ./${SYMFONY_DIR:-symfony-app}
+	@echo "${GREEN}Symfony installed in ./${SYMFONY_DIR:-symfony-app}!${NC}"
+	@echo "${YELLOW}To configure Nginx for Symfony, please update your .env file with:${NC}"
+	@echo "${YELLOW}APP_FRAMEWORK=symfony${NC}"
+	@echo "${YELLOW}APP_PUBLIC_DIR=${SYMFONY_DIR:-symfony-app}/public${NC}"
+	@echo "${YELLOW}Then restart the containers with: make restart${NC}"
 
 install-laravel:
-	@echo "${BLUE}Installing Laravel...${NC}"
-	@$(DOCKER_EXEC) $(PHP_CONTAINER) composer create-project laravel/laravel ./laravel-app
-	@echo "${GREEN}Laravel installed!${NC}"
-	@echo "${YELLOW}Don't forget to adjust your Nginx configuration.${NC}"
+	@echo "${BLUE}Installing Laravel framework...${NC}"
+	@$(DOCKER_EXEC) $(PHP_CONTAINER) composer create-project laravel/laravel ./${LARAVEL_DIR:-laravel-app}
+	@echo "${GREEN}Laravel installed in ./${LARAVEL_DIR:-laravel-app}!${NC}"
+	@echo "${YELLOW}To configure Nginx for Laravel, please update your .env file with:${NC}"
+	@echo "${YELLOW}APP_FRAMEWORK=laravel${NC}"
+	@echo "${YELLOW}APP_PUBLIC_DIR=${LARAVEL_DIR:-laravel-app}/public${NC}"
+	@echo "${YELLOW}Then restart the containers with: make restart${NC}"
