@@ -1,377 +1,302 @@
-# Nginx PHP MySQL [![Build Status](https://travis-ci.org/nanoninja/docker-nginx-php-mysql.svg?branch=master)](https://travis-ci.org/nanoninja/docker-nginx-php-mysql) [![GitHub version](https://badge.fury.io/gh/nanoninja%2Fdocker-nginx-php-mysql.svg)](https://badge.fury.io/gh/nanoninja%2Fdocker-nginx-php-mysql)
+# Docker Nginx PHP MySQL
 
-Docker running Nginx, PHP-FPM, Composer, MySQL and PHPMyAdmin.
+[![GitHub version](https://badge.fury.io/gh/nanoninja%2Fdocker-nginx-php-mysql.svg)](https://badge.fury.io/gh/nanoninja%2Fdocker-nginx-php-mysql)
+[![GitHub Actions](https://github.com/nanoninja/docker-nginx-php-mysql/workflows/CI/badge.svg)](https://github.com/nanoninja/docker-nginx-php-mysql/actions)
 
-## Overview
+A complete and modern Docker development environment for PHP applications with Nginx, PHP-FPM, MySQL and PHPMyAdmin.
 
-1. [Install prerequisites](#install-prerequisites)
+## 🚀 Features
 
-    Before installing project make sure the following prerequisites have been met.
+- Easy switch between PHP versions (8.2, 8.3, etc.)
+- Environment configurations for development and production
+- Support for multiple PHP frameworks (Symfony, Laravel, etc.)
+- Two network layers (frontend and backend) for better security
+- Integrated Composer for dependency management
+- Xdebug for debugging (in development environment)
+- Health checks for all services
+- Comprehensive Makefile with helpful commands
+- PHPMyAdmin for database management (in development environment)
 
-2. [Clone the project](#clone-the-project)
+## 📋 Requirements
 
-    We’ll download the code from its repository on GitHub.
+- Docker Engine (20.10+)
+- Docker Compose (2.0+)
+- Make (optional, but recommended)
 
-3. [Configure Nginx With SSL Certificates](#configure-nginx-with-ssl-certificates) [`Optional`]
+## 🛠️ Installation
 
-    We'll generate and configure SSL certificate for nginx before running server.
+### Clone the repository
 
-4. [Configure Xdebug](#configure-xdebug) [`Optional`]
-
-    We'll configure Xdebug for IDE (PHPStorm or Netbeans).
-
-5. [Run the application](#run-the-application)
-
-    By this point we’ll have all the project pieces in place.
-
-6. [Use Makefile](#use-makefile) [`Optional`]
-
-    When developing, you can use `Makefile` for doing recurrent operations.
-
-7. [Use Docker Commands](#use-docker-commands)
-
-    When running, you can use docker commands for doing recurrent operations.
-
-___
-
-## Install prerequisites
-
-To run the docker commands without using **sudo** you must add the **docker** group to **your-user**:
-
-```
-sudo usermod -aG docker your-user
-```
-
-For now, this project has been mainly created for Unix `(Linux/MacOS)`. Perhaps it could work on Windows.
-
-All requisites should be available for your distribution. The most important are :
-
-* [Git](https://git-scm.com/downloads)
-* [Docker](https://docs.docker.com/engine/installation/)
-* [Docker Compose](https://docs.docker.com/compose/install/)
-
-Check if `docker-compose` is already installed by entering the following command : 
-
-```sh
-which docker-compose
-```
-
-Check Docker Compose compatibility :
-
-* [Compose file version 3 reference](https://docs.docker.com/compose/compose-file/)
-
-The following is optional but makes life more enjoyable :
-
-```sh
-which make
-```
-
-On Ubuntu and Debian these are available in the meta-package build-essential. On other distributions, you may need to install the GNU C++ compiler separately.
-
-```sh
-sudo apt install build-essential
-```
-
-### Images to use
-
-* [Nginx](https://hub.docker.com/_/nginx/)
-* [MySQL](https://hub.docker.com/_/mysql/)
-* [PHP-FPM](https://hub.docker.com/r/nanoninja/php-fpm/)
-* [Composer](https://hub.docker.com/_/composer/)
-* [PHPMyAdmin](https://hub.docker.com/r/phpmyadmin/phpmyadmin/)
-* [Generate Certificate](https://hub.docker.com/r/jacoelho/generate-certificate/)
-
-You should be careful when installing third party web servers such as MySQL or Nginx.
-
-This project use the following ports :
-
-| Server     | Port |
-|------------|------|
-| MySQL      | 8989 |
-| PHPMyAdmin | 8080 |
-| Nginx      | 8000 |
-| Nginx SSL  | 3000 |
-
-___
-
-## Clone the project
-
-To install [Git](http://git-scm.com/book/en/v2/Getting-Started-Installing-Git), download it and install following the instructions :
-
-```sh
+```bash
 git clone https://github.com/nanoninja/docker-nginx-php-mysql.git
-```
-
-Go to the project directory :
-
-```sh
 cd docker-nginx-php-mysql
 ```
 
-### Project tree
+### Initialize the project
 
-```sh
+This command will set up everything you need to start development:
+
+```bash
+make init
+```
+
+## 🏁 Quick Start
+
+### Start the environment
+
+```bash
+# Start with default environment (development)
+make start
+
+# Or explicitly select an environment
+make dev   # For development
+make prod  # For production
+```
+
+### Access your application
+
+- Web: [http://localhost:8000](http://localhost:8000)
+- Secure Web: [https://localhost:3000](https://localhost:3000) (SSL certificates must be configured)
+- PHPMyAdmin: [http://localhost:8080](http://localhost:8080) (username: dev, password: dev)
+
+### Stop the environment
+
+```bash
+make stop
+```
+
+## 🔄 Environment Management
+
+This project supports both development and production environments. Each environment has its own configuration optimized for its specific use case.
+
+### Development Environment
+
+The development environment includes:
+- Xdebug for debugging
+- PHPMyAdmin for database management
+- Development-oriented PHP settings
+- Detailed error reporting
+
+To activate:
+
+```bash
+make dev
+```
+
+### Production Environment
+
+The production environment is optimized for performance and security:
+- Disabled development tools
+- Optimized PHP settings
+- Minimized error reporting
+- Enhanced security configurations
+
+To activate:
+
+```bash
+make prod
+```
+
+### Customizing Environments
+
+You can customize the environments by editing:
+- `.env.dev` for development settings
+- `.env.prod` for production settings
+
+Common configuration options:
+
+| Variable           | Description                        | Default (Dev)    | Default (Prod)   |
+|--------------------|------------------------------------|------------------|------------------|
+| PHP_VERSION        | PHP version to use                 | 8.2              | 8.2              |
+| PHP_TARGET         | PHP image target                   | dev              | base             |
+| MYSQL_VERSION      | MySQL version                      | 8.0              | 8.0              |
+| PHP_DISPLAY_ERRORS | Show PHP errors                    | 1                | 0                |
+| PHP_MEMORY_LIMIT   | PHP memory limit                   | 256M             | 128M             |
+| XDEBUG_ENABLED     | Enable Xdebug                      | 1                | 0                |
+| SSL_COUNTRY       | Country code for SSL certificate   | US               | US               |
+| SSL_STATE         | State for SSL certificate          | State            | State            |
+| SSL_LOCALITY      | City for SSL certificate           | City             | City             |
+| SSL_ORGANIZATION  | Organization name for certificate  | Organization     | Organization     |
+| SSL_UNIT          | Organizational unit               | IT               | IT               |
+| SSL_EMAIL         | Contact email for certificate      | admin@example.com| admin@example.com|
+| SSL_DAYS          | Certificate validity in days       | 365              | 365              |
+| SSL_KEY_SIZE      | RSA key size in bits              | 4096             | 4096             |
+
+## 🔍 Debugging with Xdebug
+
+Xdebug is automatically configured in the development environment. The setup uses Docker's internal networking to detect the correct host address.
+
+### IDE Configuration
+
+#### For PHPStorm:
+
+1. Go to Settings → PHP → Debug
+2. Ensure Xdebug is selected with port 9003
+3. Go to Settings → PHP → Servers
+4. Add a server:
+   - Name: docker
+   - Host: localhost
+   - Port: 8000
+   - Path mapping: Map your project directory to `/var/www/html`
+
+#### For VS Code:
+
+1. Install the PHP Debug extension
+2. Create a `.vscode/launch.json` file:
+
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Listen for Xdebug",
+            "type": "php",
+            "request": "launch",
+            "port": 9003,
+            "pathMappings": {
+                "/var/www/html": "${workspaceFolder}"
+            }
+        }
+    ]
+}
+```
+
+### Customizing Xdebug
+
+If you need to customize Xdebug settings, edit the `etc/php/php.ini` file and restart the containers:
+
+```bash
+make restart
+```
+
+## ⚙️ Project Structure
+
+```
 .
-├── Makefile
-├── README.md
-├── data
-│   └── db
-│       ├── dumps
-│       └── mysql
-├── doc
-├── docker-compose.yml
-├── etc
-│   ├── nginx
-│   │   ├── default.conf
-│   │   └── default.template.conf
-│   ├── php
-│   │   └── php.ini
-│   └── ssl
-└── web
-    ├── app
-    │   ├── composer.json.dist
-    │   ├── phpunit.xml.dist
-    │   ├── src
-    │   │   └── Foo.php
-    │   └── test
-    │       ├── FooTest.php
-    │       └── bootstrap.php
-    └── public
-        └── index.php
+├── docker/                # Docker configuration
+│   └── php/               # PHP Dockerfile and configuration
+├── etc/                   # Configuration files
+│   ├── nginx/             # Nginx configuration
+│   ├── php/               # PHP configuration
+│   └── ssl/               # SSL certificates
+├── web/                   # Web root directory
+│   ├── app/               # Application code
+│   │   ├── src/           # Source code
+│   │   └── test/          # Test code
+│   └── public/            # Public files
+├── data/                  # Data storage
+│   └── db/                # Database data
+├── .env.dev               # Development environment variables
+├── .env.prod              # Production environment variables
+├── docker-compose.yml     # Docker Compose configuration
+└── Makefile               # Make commands
 ```
 
-___
+## 🔐 SSL Configuration
 
-## Configure Nginx With SSL Certificates
+To enable HTTPS, generate SSL certificates and update the Nginx configuration:
 
-You can change the host name by editing the `.env` file.
+```bash
+# Generate self-signed certificates
+make gen-certs
 
-If you modify the host name, do not forget to add it to the `/etc/hosts` file.
+# Edit the Nginx template
+# Uncomment the SSL server block in etc/nginx/default.template.conf
 
-1. Generate SSL certificates
-
-    ```sh
-    source .env && docker run --rm -v $(pwd)/etc/ssl:/certificates -e "SERVER=$NGINX_HOST" jacoelho/generate-certificate
-    ```
-
-2. Configure Nginx
-
-    Do not modify the `etc/nginx/default.conf` file, it is overwritten by  `etc/nginx/default.template.conf`
-
-    Edit nginx file `etc/nginx/default.template.conf` and uncomment the SSL server section :
-
-    ```sh
-    # server {
-    #     server_name ${NGINX_HOST};
-    #
-    #     listen 443 ssl;
-    #     fastcgi_param HTTPS on;
-    #     ...
-    # }
-    ```
-
-___
-
-## Configure Xdebug
-
-If you use another IDE than [PHPStorm](https://www.jetbrains.com/phpstorm/) or [Netbeans](https://netbeans.org/), go to the [remote debugging](https://xdebug.org/docs/remote) section of Xdebug documentation.
-
-For a better integration of Docker to PHPStorm, use the [documentation](https://github.com/nanoninja/docker-nginx-php-mysql/blob/master/doc/phpstorm-macosx.md).
-
-1. Get your own local IP address :
-
-    ```sh
-    sudo ifconfig
-    ```
-
-2. Edit php file `etc/php/php.ini` and comment or uncomment the configuration as needed.
-
-3. Set the `remote_host` parameter with your IP :
-
-    ```sh
-    xdebug.remote_host=192.168.0.1 # your IP
-    ```
-___
-
-## Run the application
-
-1. Copying the composer configuration file : 
-
-    ```sh
-    cp web/app/composer.json.dist web/app/composer.json
-    ```
-
-2. Start the application :
-
-    ```sh
-    docker-compose up -d
-    ```
-
-    **Please wait this might take a several minutes...**
-
-    ```sh
-    docker-compose logs -f # Follow log output
-    ```
-
-3. Open your favorite browser :
-
-    * [http://localhost:8000](http://localhost:8000/)
-    * [https://localhost:3000](https://localhost:3000/) ([HTTPS](#configure-nginx-with-ssl-certificates) not configured by default)
-    * [http://localhost:8080](http://localhost:8080/) PHPMyAdmin (username: dev, password: dev)
-
-4. Stop and clear services
-
-    ```sh
-    docker-compose down -v
-    ```
-
-___
-
-## Use Makefile
-
-When developing, you can use [Makefile](https://en.wikipedia.org/wiki/Make_(software)) for doing the following operations :
-
-| Name          | Description                                  |
-|---------------|----------------------------------------------|
-| apidoc        | Generate documentation of API                |
-| clean         | Clean directories for reset                  |
-| code-sniff    | Check the API with PHP Code Sniffer (`PSR2`) |
-| composer-up   | Update PHP dependencies with composer        |
-| docker-start  | Create and start containers                  |
-| docker-stop   | Stop and clear all services                  |
-| gen-certs     | Generate SSL certificates for `nginx`        |
-| logs          | Follow log output                            |
-| mysql-dump    | Create backup of all databases               |
-| mysql-restore | Restore backup of all databases              |
-| phpmd         | Analyse the API with PHP Mess Detector       |
-| test          | Test application with phpunit                |
-
-### Examples
-
-Start the application :
-
-```sh
-make docker-start
+# Restart the environment
+make restart
 ```
 
-Show help :
+## 🛠️ Available Commands
 
-```sh
-make help
-```
+The Makefile provides many helpful commands:
 
-___
+### Environment Management
 
-## Use Docker commands
+| Command   | Description                                   |
+|-----------|-----------------------------------------------|
+| init      | Initialize the project                        |
+| dev       | Set up development environment                |
+| prod      | Set up production environment                 |
+| start     | Start all services                            |
+| stop      | Stop all services                             |
+| restart   | Restart all services                          |
+| status    | Show service status                           |
+| logs      | View and follow logs                          |
+| clean     | Clean project data (reset to initial state)   |
 
-### Installing package with composer
+### Development Tools
 
-```sh
-docker run --rm -v $(pwd)/web/app:/app composer require symfony/yaml
-```
+| Command           | Description                                  |
+|-------------------|----------------------------------------------|
+| composer-install  | Install PHP dependencies                     |
+| composer-update   | Update PHP dependencies                      |
+| composer-autoload | Update the autoloader                        |
+| test              | Run tests                                    |
+| code-sniff        | Check code style with PHP_CodeSniffer        |
+| phpmd             | Analyze code with PHP Mess Detector          |
+| gen-certs         | Generate SSL certificates                    |
+| apidoc            | Generate API documentation                   |
 
-### Updating PHP dependencies with composer
+### Database Management
 
-```sh
-docker run --rm -v $(pwd)/web/app:/app composer update
-```
+| Command       | Description                           |
+|---------------|---------------------------------------|
+| db-dump       | Backup all databases                  |
+| db-restore    | Restore database from backup          |
+| db-connect    | Connect to MySQL shell                |
 
-### Generating PHP API documentation
+### Framework Installation
 
-```sh
-docker run --rm -v $(pwd):/data phpdoc/phpdoc -i=vendor/ -d /data/web/app/src -t /data/web/app/doc
-```
+| Command           | Description                   |
+|-------------------|-------------------------------|
+| install-symfony   | Install Symfony framework     |
+| install-laravel   | Install Laravel framework     |
 
-### Testing PHP application with PHPUnit
+Run `make help` to see all available commands.
 
-```sh
-docker-compose exec -T php ./app/vendor/bin/phpunit --colors=always --configuration ./app
-```
+## 📊 Database Connection
 
-### Fixing standard code with [PSR2](http://www.php-fig.org/psr/psr-2/)
-
-```sh
-docker-compose exec -T php ./app/vendor/bin/phpcbf -v --standard=PSR2 ./app/src
-```
-
-### Checking the standard code with [PSR2](http://www.php-fig.org/psr/psr-2/)
-
-```sh
-docker-compose exec -T php ./app/vendor/bin/phpcs -v --standard=PSR2 ./app/src
-```
-
-### Analyzing source code with [PHP Mess Detector](https://phpmd.org/)
-
-```sh
-docker-compose exec -T php ./app/vendor/bin/phpmd ./app/src text cleancode,codesize,controversial,design,naming,unusedcode
-```
-
-### Checking installed PHP extensions
-
-```sh
-docker-compose exec php php -m
-```
-
-### Handling database
-
-#### MySQL shell access
-
-```sh
-docker exec -it mysql bash
-```
-
-and
-
-```sh
-mysql -u"$MYSQL_ROOT_USER" -p"$MYSQL_ROOT_PASSWORD"
-```
-
-#### Creating a backup of all databases
-
-```sh
-mkdir -p data/db/dumps
-```
-
-```sh
-source .env && docker exec $(docker-compose ps -q mysqldb) mysqldump --all-databases -u"$MYSQL_ROOT_USER" -p"$MYSQL_ROOT_PASSWORD" > "data/db/dumps/db.sql"
-```
-
-#### Restoring a backup of all databases
-
-```sh
-source .env && docker exec -i $(docker-compose ps -q mysqldb) mysql -u"$MYSQL_ROOT_USER" -p"$MYSQL_ROOT_PASSWORD" < "data/db/dumps/db.sql"
-```
-
-#### Creating a backup of single database
-
-**`Notice:`** Replace "YOUR_DB_NAME" by your custom name.
-
-```sh
-source .env && docker exec $(docker-compose ps -q mysqldb) mysqldump -u"$MYSQL_ROOT_USER" -p"$MYSQL_ROOT_PASSWORD" --databases YOUR_DB_NAME > "data/db/dumps/YOUR_DB_NAME_dump.sql"
-```
-
-#### Restoring a backup of single database
-
-```sh
-source .env && docker exec -i $(docker-compose ps -q mysqldb) mysql -u"$MYSQL_ROOT_USER" -p"$MYSQL_ROOT_PASSWORD" < "data/db/dumps/YOUR_DB_NAME_dump.sql"
-```
-
-
-#### Connecting MySQL from [PDO](http://php.net/manual/en/book.pdo.php)
+### Connecting from PHP
 
 ```php
 <?php
-    try {
-        $dsn = 'mysql:host=mysql;dbname=test;charset=utf8;port=3306';
-        $pdo = new PDO($dsn, 'dev', 'dev');
-    } catch (PDOException $e) {
-        echo $e->getMessage();
-    }
-?>
+try {
+    $dsn = 'mysql:host=mysql;dbname=test;charset=utf8mb4;port=3306';
+    $options = [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ];
+    $pdo = new PDO($dsn, 'dev', 'dev', $options);
+} catch (PDOException $e) {
+    throw new PDOException($e->getMessage(), (int)$e->getCode());
+}
 ```
 
-___
+### Using PHPMyAdmin
 
-## Help us
+PHPMyAdmin is available at [http://localhost:8080](http://localhost:8080) in the development environment.
 
-Any thought, feedback or (hopefully not!)
+Default credentials:
+- Server: mysql
+- Username: dev
+- Password: dev
+
+## 🔧 Advanced Configuration
+
+### Customizing PHP
+
+To customize PHP settings, edit the `etc/php/php.ini` file.
+
+### Customizing Nginx
+
+The Nginx configuration uses a template system with environment variables. Edit `etc/nginx/default.template.conf` to customize the server configuration.
+
+### Customizing MySQL
+
+MySQL configuration can be adjusted through environment variables in the `.env` files.
+
+## 📝 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
