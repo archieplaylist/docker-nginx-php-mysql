@@ -1,5 +1,34 @@
-version: '3'
+version: '3.8'
+
+networks:
+    frontend-network:
+        driver: bridge
+    backend-network:
+        driver: bridge
+
 services:
+    mysqldb:
+        image: mysql:${MYSQL_VERSION}
+        container_name: ${MYSQL_HOST}
+        restart: always
+        environment:
+            - MYSQL_DATABASE=${MYSQL_DATABASE}
+            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+            - MYSQL_USER=${MYSQL_USER}
+            - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+        ports:
+            - "8989:3306"
+        volumes:
+            - "./data/db/mysql:/var/lib/mysql"
+        networks:
+            - backend-network
+        healthcheck:
+            test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}" ]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
+
     web:
         image: nginx:alpine
         volumes:
@@ -17,17 +46,37 @@ services:
         depends_on:
             - php
             - mysqldb
+        networks:
+            - frontend-network
+            - backend-network
+        healthcheck:
+            test: [ "CMD", "curl", "-f", "http://localhost" ]
+            interval: 10s
+            timeout: 3s
+            retries: 3
+
     php:
-        image: nanoninja/php-fpm:${PHP_VERSION}
+        build:
+            context: ./docker/php
+            args:
+                PHP_VERSION: ${PHP_VERSION}
+                PHP_TARGET: ${PHP_TARGET:-dev}
         restart: always
         volumes:
-            - "./etc/php/php.ini:/usr/local/etc/php/conf.d/php.ini"
+            - "./etc/php/php.ini:/usr/local/etc/php/conf.d/custom.ini"
             - "./web:/var/www/html"
-    composer:
-        image: "composer"
-        volumes:
-            - "./web/app:/app"
-        command: install
+        environment:
+            - PHP_DISPLAY_ERRORS=${PHP_DISPLAY_ERRORS:-1}
+            - PHP_MEMORY_LIMIT=${PHP_MEMORY_LIMIT:-256M}
+            - XDEBUG_ENABLED=${XDEBUG_ENABLED:-1}
+        networks:
+            - backend-network
+        healthcheck:
+            test: [ "CMD", "php-fpm", "-t" ]
+            interval: 10s
+            timeout: 5s
+            retries: 3
+
     myadmin:
         image: phpmyadmin/phpmyadmin
         container_name: phpmyadmin
@@ -36,21 +85,16 @@ services:
         environment:
             - PMA_ARBITRARY=1
             - PMA_HOST=${MYSQL_HOST}
+            - PMA_USER=${PHPMYADMIN_USER:-root}
+            - PMA_PASSWORD=${PHPMYADMIN_PASSWORD:-${MYSQL_ROOT_PASSWORD}}
+            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+            - UPLOAD_LIMIT=${PHPMYADMIN_UPLOAD_LIMIT:-100M}
         restart: always
         depends_on:
-            - mysqldb
-    mysqldb:
-        image: mysql:${MYSQL_VERSION}
-        container_name: ${MYSQL_HOST}
-        restart: always
-        env_file:
-            - ".env"
-        environment:
-            - MYSQL_DATABASE=${MYSQL_DATABASE}
-            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-            - MYSQL_USER=${MYSQL_USER}
-            - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-        ports:
-            - "8989:3306"
-        volumes:
-            - "./data/db/mysql:/var/lib/mysql"
+            mysqldb:
+                condition: service_healthy
+        networks:
+            - frontend-network
+            - backend-network
+        profiles:
+            - ${PHPMYADMIN_PROFILE:-dev}
