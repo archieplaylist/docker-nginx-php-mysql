@@ -1,6 +1,16 @@
-# Global
+# Global system files
 .*.swp
 .DS_Store
+Thumbs.db
+
+# IDE specific
+# PHPStorm
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/dictionaries
+
+# VSCode
+.vscode/
 
 # Application
 web/app/composer.json
@@ -9,20 +19,22 @@ web/app/vendor/
 web/app/doc/
 web/app/report/
 data/
+.phpdoc/
 
-# PHPStorm
-.idea/**/workspace.xml
-.idea/**/tasks.xml
-.idea/dictionaries
+# Framework directories
+/web/symfony-app/
+/web/laravel-app/
 
-# Netbeans
-nbproject/
-/nbproject/
-/nbproject/private/
-/nbproject/private/private.properties
+# Generated files
+etc/nginx/default.conf
 
-# VSCode
-.vscode/
+# Docker volumes
+mysql_data/
 
-# SSL Certs
+# SSL Certificates
 etc/ssl/
+
+# Temporary files
+*.log
+*.cache
+*.tmp
