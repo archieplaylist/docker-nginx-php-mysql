@@ -60,6 +60,7 @@ help:
 	@echo ""
 	@echo "${GREEN}Utility commands:${NC}"
 	@echo "  ${YELLOW}gen-certs${NC}            Generate SSL certificates"
+	@echo "  ${YELLOW}enable-ssl${NC}           Enable SSL in Nginx configuration"
 	@echo "  ${YELLOW}clean${NC}                Clean directories for reset"
 	@echo "  ${YELLOW}apidoc${NC}               Generate API documentation"
 	@echo ""
@@ -187,24 +188,32 @@ db-connect:
 	fi
 
 # Utility commands
-.PHONY: gen-certs clean apidoc reset-owner
+.PHONY: gen-certs enable-ssl clean apidoc reset-owner
 
 gen-certs:
 	@echo "${BLUE}Generating SSL certificates...${NC}"
 	@docker build -t ssl-generator docker/ssl
 	@docker run --rm -v $(shell pwd)/etc/ssl:/certificates \
 		-e SERVER=${NGINX_HOST} \
-		-e COUNTRY=${SSL_COUNTRY} \
-		-e STATE=${SSL_STATE} \
-		-e LOCALITY=${SSL_LOCALITY} \
-		-e ORGANIZATION=${SSL_ORGANIZATION} \
+		-e COUNTRY=${NGINX_SSL_COUNTRY} \
+		-e STATE=${NGINX_SSL_STATE} \
+		-e LOCALITY=${NGINX_SSL_LOCALITY} \
+		-e ORGANIZATION=${NGINX_SSL_ORGANIZATION} \
 		-e ORGANIZATIONAL_UNIT=${SSL_UNIT} \
-		-e EMAIL=${SSL_EMAIL} \
-		-e CERT_EXPIRY=${SSL_DAYS} \
-		-e KEY_SIZE=${SSL_KEY_SIZE} \
+		-e EMAIL=${NGINX_SSL_EMAIL} \
+		-e CERT_EXPIRY=${NGINX_SSL_DAYS} \
+		-e KEY_SIZE=${NGINX_SSL_KEY_SIZE} \
 		ssl-generator
 	@$(MAKE) reset-owner dir=$(shell pwd)/etc/ssl
 	@echo "${GREEN}Certificates generated!${NC}"
+
+enable-ssl:
+	@echo "${BLUE}Enabling SSL in Nginx configuration...${NC}"
+	@sed -i 's/# server {/server {/' etc/nginx/default.conf
+	@sed -i 's/# \(.*ssl.*\)/\1/' etc/nginx/default.conf
+	@sed -i 's/# \(.*443.*\)/\1/' etc/nginx/default.conf
+	@$(MAKE) restart
+	@echo "${GREEN}SSL has been enabled. Access your site at https://${NGINX_HOST}:3000${NC}"
 
 clean:
 	@echo "${BLUE}Cleaning directories...${NC}"
