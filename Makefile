@@ -1,3 +1,6 @@
+# Include environment variables
+include .env
+
 # Variables pour la gestion des couleurs
 ifndef NOCOLOR
   GREEN = \033[0;32m
@@ -188,7 +191,18 @@ db-connect:
 
 gen-certs:
 	@echo "${BLUE}Generating SSL certificates...${NC}"
-	@docker run --rm -v $(shell pwd)/etc/ssl:/certificates -e "SERVER=$${NGINX_HOST}" jacoelho/generate-certificate
+	@docker build -t ssl-generator docker/ssl
+	@docker run --rm -v $(shell pwd)/etc/ssl:/certificates \
+		-e SERVER=${NGINX_HOST} \
+		-e COUNTRY=${SSL_COUNTRY} \
+		-e STATE=${SSL_STATE} \
+		-e LOCALITY=${SSL_LOCALITY} \
+		-e ORGANIZATION=${SSL_ORGANIZATION} \
+		-e ORGANIZATIONAL_UNIT=${SSL_UNIT} \
+		-e EMAIL=${SSL_EMAIL} \
+		-e CERT_EXPIRY=${SSL_DAYS} \
+		-e KEY_SIZE=${SSL_KEY_SIZE} \
+		ssl-generator
 	@$(MAKE) reset-owner dir=$(shell pwd)/etc/ssl
 	@echo "${GREEN}Certificates generated!${NC}"
 
