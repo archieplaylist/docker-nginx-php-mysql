@@ -1,6 +1,6 @@
 <?php
 
-include '../app/vendor/autoload.php';
+include '../vendor/autoload.php';
 $foo = new App\Acme\Foo();
 
 ?><!DOCTYPE html>
