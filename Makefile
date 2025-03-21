@@ -218,7 +218,7 @@ gen-certs:
 		-e STATE=${NGINX_SSL_STATE} \
 		-e LOCALITY=${NGINX_SSL_LOCALITY} \
 		-e ORGANIZATION=${NGINX_SSL_ORGANIZATION} \
-		-e ORGANIZATIONAL_UNIT=${SSL_UNIT} \
+		-e ORGANIZATIONAL_UNIT=${NGINX_SSL_UNIT} \
 		-e EMAIL=${NGINX_SSL_EMAIL} \
 		-e CERT_EXPIRY=${NGINX_SSL_DAYS} \
 		-e KEY_SIZE=${NGINX_SSL_KEY_SIZE} \
@@ -228,9 +228,10 @@ gen-certs:
 
 enable-ssl:
 	@echo "${BLUE}Enabling SSL in Nginx configuration...${NC}"
-	@sed -i 's/# server {/server {/' etc/nginx/default.conf
-	@sed -i 's/# \(.*ssl.*\)/\1/' etc/nginx/default.conf
-	@sed -i 's/# \(.*443.*\)/\1/' etc/nginx/default.conf
+	@docker run --rm \
+		-v $(PWD)/etc/nginx:/etc/nginx \
+		alpine:latest \
+		sh -c 'apk add --no-cache sed && sed -i "/^# server {/,/^# }/ s/^# //" /etc/nginx/default.template.conf && sed -i "/^#[[:space:]]*$$/s/^#//" /etc/nginx/default.template.conf'
 	@$(MAKE) restart
 	@echo "${GREEN}SSL has been enabled. Access your site at https://${NGINX_HOST}:3000${NC}"
 
