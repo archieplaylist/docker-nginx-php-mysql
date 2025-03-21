@@ -18,18 +18,11 @@ web/app/composer.lock
 web/app/vendor/
 web/app/doc/
 web/app/report/
-data/
 .phpdoc/
 
 # Framework directories
 /web/symfony-app/
 /web/laravel-app/
-
-# Generated files
-etc/nginx/default.conf
-
-# Docker volumes
-mysql_data/
 
 # SSL Certificates
 etc/ssl/
