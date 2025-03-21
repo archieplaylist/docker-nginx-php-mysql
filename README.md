@@ -3,7 +3,7 @@
 [![GitHub version](https://badge.fury.io/gh/nanoninja%2Fdocker-nginx-php-mysql.svg)](https://badge.fury.io/gh/nanoninja%2Fdocker-nginx-php-mysql)
 [![GitHub Actions](https://github.com/nanoninja/docker-nginx-php-mysql/workflows/CI/badge.svg)](https://github.com/nanoninja/docker-nginx-php-mysql/actions)
 
-A complete and modern Docker development environment for PHP applications with Nginx, PHP-FPM, MySQL and PHPMyAdmin.
+A complete and modern Docker development environment for PHP applications with Nginx, PHP-FPM, Composer, MySQL and PHPMyAdmin.
 
 ## 🚀 Features
 
@@ -113,36 +113,39 @@ Common configuration options:
 | PHP_DISPLAY_ERRORS | Show PHP errors                    | 1                | 0                |
 | PHP_MEMORY_LIMIT   | PHP memory limit                   | 256M             | 128M             |
 | XDEBUG_ENABLED     | Enable Xdebug                      | 1                | 0                |
-| SSL_COUNTRY       | Country code for SSL certificate   | US               | US               |
-| SSL_STATE         | State for SSL certificate          | State            | State            |
-| SSL_LOCALITY      | City for SSL certificate           | City             | City             |
-| SSL_ORGANIZATION  | Organization name for certificate  | Organization     | Organization     |
-| SSL_UNIT          | Organizational unit               | IT               | IT               |
-| SSL_EMAIL         | Contact email for certificate      | admin@example.com| admin@example.com|
-| SSL_DAYS          | Certificate validity in days       | 365              | 365              |
-| SSL_KEY_SIZE      | RSA key size in bits              | 4096             | 4096             |
+| APP_FRAMEWORK      | Framework type                     | default          | default          |
+| APP_PUBLIC_DIR     | Public directory                   | public           | public           |
+| SYMFONY_DIR        | Symfony install directory          | symfony-app      | symfony-app      |
+| LARAVEL_DIR        | Laravel install directory          | laravel-app      | laravel-app      |
+| PROJECT_NAME       | Project name for Docker volumes    | docker_nginx_php_mysql | docker_nginx_php_mysql |
 
 ## 🔍 Debugging with Xdebug
 
-Xdebug is automatically configured in the development environment. The setup uses Docker's internal networking to detect the correct host address.
+This environment comes with Xdebug pre-configured in the development setup, allowing you to debug your PHP applications effectively. This section provides detailed instructions on how to configure and use Xdebug with popular IDEs.
 
-### IDE Configuration
+### How Xdebug Works in This Environment
 
-#### For PHPStorm:
+In the development environment (`make dev`), Xdebug is automatically enabled in the PHP container. The configuration includes:
 
-1. Go to Settings → PHP → Debug
-2. Ensure Xdebug is selected with port 9003
-3. Go to Settings → PHP → Servers
-4. Add a server:
-   - Name: docker
-   - Host: localhost
-   - Port: 8000
-   - Path mapping: Map your project directory to `/var/www/html`
+- Xdebug mode set to `develop,debug`
+- Automatic connection to your host machine
+- Start with request enabled
+- Debug port set to 9003 (Xdebug 3 default)
 
-#### For VS Code:
+### Configuration for Visual Studio Code
 
-1. Install the PHP Debug extension
-2. Create a `.vscode/launch.json` file:
+VS Code requires the PHP Debug extension to work with Xdebug. Here's how to set it up:
+
+1. **Install the PHP Debug extension**
+   - Open VS Code
+   - Go to Extensions (Ctrl+Shift+X or Cmd+Shift+X)
+   - Search for "PHP Debug" by Felix Becker
+   - Click Install
+
+2. **Create a launch configuration**
+   - Create a `.vscode` directory in your project root
+   - Create a file named `launch.json` inside the `.vscode` directory
+   - Add the following configuration:
 
 ```json
 {
@@ -155,28 +158,127 @@ Xdebug is automatically configured in the development environment. The setup use
             "port": 9003,
             "pathMappings": {
                 "/var/www/html": "${workspaceFolder}"
+            },
+            "log": true,
+            "xdebugSettings": {
+                "max_data": 65535,
+                "show_hidden": 1,
+                "max_children": 100,
+                "max_depth": 5
             }
         }
     ]
 }
 ```
 
-### Customizing Xdebug
+3. **Start debugging**
+   - Set breakpoints in your code by clicking in the gutter next to line numbers
+   - Start the debugging session in VS Code (F5 or click the green play button in the Debug panel)
+   - Access your application in the browser
+   - VS Code should stop at your breakpoints
 
-If you need to customize Xdebug settings, edit the `etc/php/php.ini` file and restart the containers:
+### Configuration for PHPStorm
+
+PHPStorm has built-in support for Xdebug. Here's how to configure it:
+
+1. **Configure the PHP interpreter**
+   - Go to Settings/Preferences → PHP
+   - Add a new CLI Interpreter → From Docker
+   - Select the PHP container from your docker-compose configuration
+   - PHPStorm should detect Xdebug automatically
+
+2. **Set up the server configuration**
+   - Go to Settings/Preferences → PHP → Servers
+   - Add a new server:
+     - Name: docker
+     - Host: localhost
+     - Port: 8000
+     - Check "Use path mappings"
+     - Map your project root to `/var/www/html`
+
+3. **Configure Xdebug**
+   - Go to Settings/Preferences → PHP → Debug
+   - Ensure Xdebug is set to port 9003
+   - Enable "Can accept external connections"
+
+4. **Start debugging**
+   - Set breakpoints in your code
+   - Click on the "Start Listening for PHP Debug Connections" button (telephone icon)
+   - Access your application in the browser
+   - PHPStorm should stop at your breakpoints
+
+### Troubleshooting Xdebug
+
+If you're having issues with Xdebug, try these common solutions:
+
+1. **Verify Xdebug is enabled**
+   ```bash
+   docker-compose exec php php -m | grep xdebug
+   ```
+   This should return "xdebug" if it's enabled.
+
+2. **Check Xdebug settings**
+   ```bash
+   docker-compose exec php php -i | grep xdebug
+   ```
+   Review the settings to ensure they match what you expect.
+
+3. **Ensure correct network settings**
+   If your host IP address is different or you're using a VPN, you might need to adjust the Xdebug client host in `etc/php/php.ini`:
+   ```ini
+   xdebug.client_host=host.docker.internal
+   ```
+   
+   On Linux, you might need to use your actual host IP or add `extra_hosts` to your docker-compose.yml:
+   ```yaml
+   services:
+     php:
+       extra_hosts:
+         - "host.docker.internal:host-gateway"
+   ```
+
+4. **Browser extensions**
+   Install browser extensions to easily toggle Xdebug sessions:
+   - For Chrome: "Xdebug Helper"
+   - For Firefox: "Xdebug Helper" or "Xdebug Extension"
+
+### Customizing Xdebug Settings
+
+You can customize Xdebug by editing the `etc/php/php.ini` file. Here are some useful settings you might want to adjust:
+
+```ini
+; Adjust max nesting level if you have deeply nested function calls
+xdebug.max_nesting_level=1000
+
+; Increase var display max depth for complex objects
+xdebug.var_display_max_depth=10
+
+; Increase var display max children
+xdebug.var_display_max_children=256
+
+; Increase var display max data
+xdebug.var_display_max_data=1024
+```
+
+After changing any settings, restart the containers:
 
 ```bash
 make restart
 ```
+
+With this setup, you'll have a powerful debugging environment that helps you identify and fix issues in your PHP applications efficiently.
 
 ## ⚙️ Project Structure
 
 ```
 .
 ├── docker/                # Docker configuration
-│   └── php/               # PHP Dockerfile and configuration
+│   ├── php/               # PHP Dockerfile
+│   ├── ssl/               # SSL certificate generator
+│   └── mysql/             # MySQL initialization scripts
 ├── etc/                   # Configuration files
 │   ├── nginx/             # Nginx configuration
+│   │   └── framework/     # Framework-specific configs
 │   ├── php/               # PHP configuration
 │   └── ssl/               # SSL certificates
 ├── web/                   # Web root directory
@@ -184,8 +286,6 @@ make restart
 │   │   ├── src/           # Source code
 │   │   └── test/          # Test code
 │   └── public/            # Public files
-├── data/                  # Data storage
-│   └── db/                # Database data
 ├── .env.dev               # Development environment variables
 ├── .env.prod              # Production environment variables
 ├── docker-compose.yml     # Docker Compose configuration
@@ -194,18 +294,33 @@ make restart
 
 ## 🔐 SSL Configuration
 
-To enable HTTPS, generate SSL certificates and update the Nginx configuration:
+To enable HTTPS, follow these steps:
 
 ```bash
 # Generate self-signed certificates
 make gen-certs
 
-# Edit the Nginx template
-# Uncomment the SSL server block in etc/nginx/default.template.conf
+# Enable SSL in Nginx configuration
+make enable-ssl
 
 # Restart the environment
 make restart
 ```
+
+You can then access your site via HTTPS at [https://localhost:3000](https://localhost:3000).
+
+The SSL certificates are customizable through environment variables:
+
+| Variable           | Description                        | Default          |
+|--------------------|------------------------------------|------------------|
+| NGINX_SSL_COUNTRY  | Country code                       | US               |
+| NGINX_SSL_STATE    | State/Province                     | State            |
+| NGINX_SSL_LOCALITY | City                               | City             |
+| NGINX_SSL_ORGANIZATION | Organization name              | Organization     |
+| NGINX_SSL_UNIT     | Organizational unit                | IT               |
+| NGINX_SSL_EMAIL    | Contact email                      | admin@example.com|
+| NGINX_SSL_DAYS     | Certificate validity in days       | 365              |
+| NGINX_SSL_KEY_SIZE | RSA key size in bits               | 4096             |
 
 ## 🛠️ Available Commands
 
@@ -224,6 +339,7 @@ The Makefile provides many helpful commands:
 | status    | Show service status                           |
 | logs      | View and follow logs                          |
 | clean     | Clean project data (reset to initial state)   |
+| clean-all | Clean all data including volumes              |
 
 ### Development Tools
 
@@ -236,15 +352,18 @@ The Makefile provides many helpful commands:
 | code-sniff        | Check code style with PHP_CodeSniffer        |
 | phpmd             | Analyze code with PHP Mess Detector          |
 | gen-certs         | Generate SSL certificates                    |
+| enable-ssl        | Enable SSL in Nginx configuration            |
 | apidoc            | Generate API documentation                   |
 
 ### Database Management
 
-| Command       | Description                           |
-|---------------|---------------------------------------|
-| db-dump       | Backup all databases                  |
-| db-restore    | Restore database from backup          |
-| db-connect    | Connect to MySQL shell                |
+| Command          | Description                           |
+|------------------|---------------------------------------|
+| db-dump          | Backup all databases                  |
+| db-restore       | Restore database from backup          |
+| db-connect       | Connect to MySQL shell                |
+| db-volume-create | Create MySQL data volume              |
+| db-volume-remove | Remove MySQL data volume              |
 
 ### Framework Installation
 
@@ -254,6 +373,99 @@ The Makefile provides many helpful commands:
 | install-laravel   | Install Laravel framework     |
 
 Run `make help` to see all available commands.
+
+## PHP Frameworks Support
+
+This environment supports popular PHP frameworks out of the box. For the best experience with frameworks, follow these recommendations:
+
+### Recommended Workflow
+
+1. **First decide** whether you'll use a framework or the default application
+2. **Configure your environment** (development or production)
+3. **Install your framework** if needed
+4. **Modify your .env file** to point to your framework
+
+### Installing Symfony
+
+```bash
+# First, configure your environment
+make dev  # or make prod
+
+# Then, install Symfony
+make install-symfony
+
+# Finally, modify your .env file to use Symfony
+# APP_FRAMEWORK=symfony
+# APP_PUBLIC_DIR=symfony-app/public
+
+# Restart the containers
+make restart
+```
+
+### Installing Laravel
+
+```bash
+# Follow the same approach
+make dev  # or make prod
+make install-laravel
+
+# Modify your .env file
+# APP_FRAMEWORK=laravel
+# APP_PUBLIC_DIR=laravel-app/public
+
+make restart
+```
+
+### Adding Support for Other Frameworks
+
+If you want to use a framework that's not included in the predefined list, you can add support for it by following these steps:
+
+1. **Create a framework configuration file** for Nginx:
+
+```bash
+# Create a new configuration file in the framework directory
+touch etc/nginx/framework/yourframework.conf
+```
+
+2. **Add the specific Nginx rules** for your framework. For example:
+
+```nginx
+# CakePHP configuration example
+location / {
+    try_files $uri $uri/ /index.php?$args;
+}
+
+# Deny access to sensitive directories
+location ~ ^/(config|tmp|logs) {
+    deny all;
+    return 404;
+}
+```
+
+3. **Install your framework** using Composer:
+
+```bash
+docker-compose exec php bash -c "cd /var/www/html && composer create-project your/framework yourframework-app"
+```
+
+4. **Update your `.env` file** to use the new framework:
+
+```
+APP_FRAMEWORK=yourframework
+APP_PUBLIC_DIR=yourframework-app/public
+```
+
+5. **Restart the containers** to apply the changes:
+
+```bash
+make restart
+```
+
+By following these steps, you can extend the environment to support virtually any PHP framework or custom application structure.
+
+### Important Note
+
+If you switch between environments using `make dev` or `make prod`, you'll need to reconfigure your framework-specific variables in your `.env` file, as these commands replace the entire file.
 
 ## 📊 Database Connection
 
@@ -285,6 +497,10 @@ Default credentials:
 
 ## 🔧 Advanced Configuration
 
+### Database Initialization
+
+You can add SQL scripts to `docker/mysql/init/` directory. These scripts will be executed automatically when the MySQL container is first started.
+
 ### Customizing PHP
 
 To customize PHP settings, edit the `etc/php/php.ini` file.
@@ -293,9 +509,16 @@ To customize PHP settings, edit the `etc/php/php.ini` file.
 
 The Nginx configuration uses a template system with environment variables. Edit `etc/nginx/default.template.conf` to customize the server configuration.
 
-### Customizing MySQL
+Framework-specific configurations are stored in `etc/nginx/framework/` directory.
 
-MySQL configuration can be adjusted through environment variables in the `.env` files.
+### Network Architecture
+
+This project uses a two-layer network architecture:
+
+1. **Frontend Network**: For services that need to be accessible from outside (Nginx, PHPMyAdmin)
+2. **Backend Network**: For services that should only communicate internally (PHP, MySQL)
+
+This design improves security by isolating internal services from direct external access.
 
 ## 📝 License
 
