@@ -1,8 +1,8 @@
 -- Example initialization script
 -- This will run when the MySQL container is first started
 
--- Use the database specified in the environment variable
-USE ${MYSQL_DATABASE};
+-- Use database
+-- USE test;
 
 -- Create a sample table
 -- CREATE TABLE IF NOT EXISTS sample_table (
