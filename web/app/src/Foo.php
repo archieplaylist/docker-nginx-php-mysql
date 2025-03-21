@@ -1,14 +1,9 @@
 <?php
 
-/**
- * I belong to a file
- */
+declare(strict_types=1);
 
-namespace App\Acme;
+namespace App;
 
-/**
- * I belong to a class
- */
 class Foo
 {
     /**
@@ -16,6 +11,6 @@ class Foo
      */
     public function getName()
     {
-        return 'Nginx PHP MySQL';
+        return 'Docker Nginx PHP MySQL';
     }
 }
