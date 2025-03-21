@@ -238,7 +238,6 @@ clean:
 	@echo "${BLUE}Cleaning directories...${NC}"
 	@rm -Rf .phpdoc
 	@rm -Rf etc/ssl/*
-	@rm -Rf data/db/mysql/*
 	@rm -Rf $(MYSQL_DUMPS_DIR)/*
 	@rm -Rf $(APP_ROOT)/vendor
 	@rm -Rf $(APP_ROOT)/composer.lock
