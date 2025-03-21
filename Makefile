@@ -97,7 +97,12 @@ prod:
 
 start:
 	@echo "${BLUE}Starting containers...${NC}"
-	@$(DOCKER_COMPOSE) up -d
+	@if grep -q "PHP_TARGET=dev" .env; then \
+		echo "${BLUE}Development environment detected, enabling PHPMyAdmin...${NC}"; \
+		$(DOCKER_COMPOSE) --profile dev up -d; \
+	else \
+		$(DOCKER_COMPOSE) up -d; \
+	fi
 	@echo "${GREEN}Containers started!${NC}"
 
 stop:
