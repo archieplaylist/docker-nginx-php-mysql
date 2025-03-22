@@ -96,10 +96,7 @@ RUN if [ "$PHP_TARGET" = "dev" ]; then \
     && apt-get remove -y wget \
     && apt-get autoremove --purge -y && apt-get autoclean -y && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* \
-    && rm -rf /tmp/* /var/tmp/* \
-    && echo 'xdebug.mode=develop,debug' > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo 'xdebug.client_host=host.docker.internal' >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo 'xdebug.start_with_request=yes' >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini ; \
+    && rm -rf /tmp/* /var/tmp/* ; \
 else \
     echo "Building production image without development tools."; \
 fi
