@@ -282,7 +282,7 @@ With this setup, you'll have a powerful debugging environment that helps you ide
 │   └── mysql/             # MySQL initialization scripts
 ├── etc/                   # Configuration files
 │   ├── nginx/             # Nginx configuration
-│   │   └── framework/     # Framework-specific configs
+│   │   └── workspace/     # Workspace-specific configs
 │   ├── php/               # PHP configuration
 │   └── ssl/               # SSL certificates
 ├── web/                   # Web root directory
@@ -424,14 +424,14 @@ make restart
 
 If you want to use a framework that's not included in the predefined list, you can add support for it by following these steps:
 
-1. **Create a framework configuration file** for Nginx:
+1. **Create a workspace configuration file** for Nginx:
 
 ```bash
-# Create a new configuration file in the framework directory
-touch etc/nginx/framework/yourframework.conf
+# Create a new configuration file in the workspace directory
+touch etc/nginx/workspace/yourworkspace.conf
 ```
 
-2. **Add the specific Nginx rules** for your framework. For example:
+2. **Add the specific Nginx rules** for your workspace. For example:
 
 ```nginx
 # CakePHP configuration example
@@ -449,14 +449,14 @@ location ~ ^/(config|tmp|logs) {
 3. **Install your framework** using Composer:
 
 ```bash
-docker-compose exec php bash -c "cd /var/www/html && composer create-project your/framework yourframework-app"
+docker-compose exec php bash -c "cd /var/www/html && composer create-project your/framework yourworkspace-app"
 ```
 
-4. **Update your `.env` file** to use the new framework:
+4. **Update your `.env` file** to use the new workspace:
 
 ```
-APP_WORKSPACE=yourframework
-APP_PUBLIC_DIR=yourframework-app/public
+APP_WORKSPACE=yourworkspace
+APP_PUBLIC_DIR=yourworkspace-app/public
 ```
 
 5. **Restart the containers** to apply the changes:
@@ -465,11 +465,11 @@ APP_PUBLIC_DIR=yourframework-app/public
 make restart
 ```
 
-By following these steps, you can extend the environment to support virtually any PHP framework or custom application structure.
+By following these steps, you can extend the environment to support virtually any PHP workspace or custom application structure.
 
 ### Important Note
 
-If you switch between environments using `make dev` or `make prod`, you'll need to reconfigure your framework-specific variables in your `.env` file, as these commands replace the entire file.
+If you switch between environments using `make dev` or `make prod`, you'll need to reconfigure your workspace-specific variables in your `.env` file, as these commands replace the entire file.
 
 ## 📊 Database Connection
 
@@ -513,7 +513,7 @@ To customize PHP settings, edit the `etc/php/php.ini` file.
 
 The Nginx configuration uses a template system with environment variables. Edit `etc/nginx/default.template.conf` to customize the server configuration.
 
-Framework-specific configurations are stored in `etc/nginx/framework/` directory.
+Framework-specific configurations are stored in `etc/nginx/workspace/` directory.
 
 ### Network Architecture
 
