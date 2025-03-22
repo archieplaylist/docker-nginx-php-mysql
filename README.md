@@ -36,34 +36,47 @@ git clone https://github.com/nanoninja/docker-nginx-php-mysql.git
 cd docker-nginx-php-mysql
 ```
 
-### Initialize the project
+## 🏁 Getting Started
 
-This command will set up everything you need to start development:
+Setting up your development environment involves just a few simple steps:
 
-```bash
-make init
-```
+### 1. Start the Docker environment
 
-## 🏁 Quick Start
-
-### Start the environment
+First, start all the Docker containers required for the environment:
 
 ```bash
 # Start with default environment (development)
 make start
 
-# Or explicitly select an environment
-make dev   # For development
-make prod  # For production
+# Or explicitly select an environment before starting
+make dev   # For development mode
+make prod  # For production mode
 ```
 
-### Access your application
+### 2. Initialize the project
+
+After the containers are running, initialize the project to install dependencies and set up the environment:
+
+```bash
+make init
+```
+
+This command will:
+
+- Copy the composer configuration template
+- Install PHP dependencies via Composer
+- Set up the appropriate file permissions
+- Prepare the environment for development
+
+### 3. Access your application
+
+Once the environment is running and initialized, you can access:
 
 - Web: [http://localhost:8000](http://localhost:8000)
 - Secure Web: [https://localhost:3000](https://localhost:3000) (SSL certificates must be configured)
 - PHPMyAdmin: [http://localhost:8080](http://localhost:8080) (username: dev, password: dev)
 
-### Stop the environment
+### 4. Stop the environment when finished
 
 ```bash
 make stop
