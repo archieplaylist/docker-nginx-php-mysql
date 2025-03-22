@@ -526,4 +526,18 @@ This design improves security by isolating internal services from direct externa
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the BSD 3-Clause License.
+
+It allows you to:
+- Use the software commercially
+- Modify the software
+- Distribute the software
+- Place warranty on the software
+- Use the software privately
+
+The only requirements are:
+- Include the copyright notice
+- Include the license text
+- Not use the author's name to promote derived products without permission
+
+For more details, see the LICENSE file in the project repository.
