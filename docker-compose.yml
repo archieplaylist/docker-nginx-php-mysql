@@ -68,7 +68,7 @@ services:
                 PHP_TARGET: ${PHP_TARGET:-dev}
         restart: always
         volumes:
-            - "./etc/php/php.ini:/usr/local/etc/php/conf.d/custom.ini"
+            - "./etc/php/php.ini:/usr/local/etc/php/conf.d/99-custom.ini"
             - "./web:/var/www/html"
         environment:
             - PHP_DISPLAY_ERRORS=${PHP_DISPLAY_ERRORS:-1}
