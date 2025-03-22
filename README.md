@@ -166,7 +166,6 @@ VS Code requires the PHP Debug extension to work with Xdebug. Here's how to set 
 
 ```json
 {
-    "version": "0.2.0",
     "configurations": [
         {
             "name": "Listen for Xdebug",
