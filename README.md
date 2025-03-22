@@ -174,7 +174,7 @@ VS Code requires the PHP Debug extension to work with Xdebug. Here's how to set 
             "request": "launch",
             "port": 9003,
             "pathMappings": {
-                "/var/www/html": "${workspaceFolder}"
+                "/var/www/html": "${workspaceFolder}/web"
             },
             "log": true,
             "xdebugSettings": {
@@ -185,6 +185,18 @@ VS Code requires the PHP Debug extension to work with Xdebug. Here's how to set 
             }
         }
     ]
+}
+```
+
+When using Xdebug with Docker and VSCode, it's crucial to correctly configure the path mapping between your local filesystem and the Docker container's filesystem.
+
+In our configuration, the local directory `./web` is mounted to the path `/var/www/html` in the container. This distinction is essential for understanding how to configure VSCode.
+
+Your `launch.json` file in VSCode should contain the following mapping:
+
+```json
+"pathMappings": {
+    "/var/www/html": "${workspaceFolder}/web"
 }
 ```
 
