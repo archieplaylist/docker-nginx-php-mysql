@@ -23,6 +23,10 @@ A complete and modern Docker development environment for PHP applications with N
 - Docker Compose (2.0+)
 - Make (optional, but recommended)
 
+### Command Line Reference
+
+For users who don't have access to the `make` utility, a complete reference of all available commands with their manual alternatives is provided in the [Command Line Reference](doc/commands.md) document.
+
 ## 🛠️ Installation
 
 ### Clone the repository
