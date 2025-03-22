@@ -15,10 +15,10 @@ else
 endif
 
 # Définition des variables
-DOCKER_COMPOSE = docker-compose
-DOCKER_EXEC = docker-compose exec -T
+DOCKER_COMPOSE = docker compose
+DOCKER_EXEC = docker compose exec -T
 PHP_CONTAINER = php
-MYSQL_CONTAINER = $(shell docker-compose ps -q mysqldb 2>/dev/null)
+MYSQL_CONTAINER = $(shell docker compose ps -q mysqldb 2>/dev/null)
 WEB_ROOT = $(shell pwd)/web
 APP_ROOT = $(WEB_ROOT)/app
 MYSQL_DUMPS_DIR = data/db/dumps
