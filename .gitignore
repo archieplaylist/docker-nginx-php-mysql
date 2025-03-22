@@ -20,7 +20,7 @@ web/app/doc/
 web/app/report/
 .phpdoc/
 
-# Framework directories
+# Workspace directories
 /web/symfony-app/
 /web/laravel-app/
 

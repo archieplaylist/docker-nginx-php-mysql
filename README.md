@@ -117,7 +117,7 @@ Common configuration options:
 | PHP_DISPLAY_ERRORS | Show PHP errors                    | 1                | 0                |
 | PHP_MEMORY_LIMIT   | PHP memory limit                   | 256M             | 128M             |
 | XDEBUG_ENABLED     | Enable Xdebug                      | 1                | 0                |
-| APP_FRAMEWORK      | Framework type                     | default          | default          |
+| APP_WORKSPACE      | Workspace type                     | default          | default          |
 | APP_PUBLIC_DIR     | Public directory                   | public           | public           |
 | SYMFONY_DIR        | Symfony install directory          | symfony-app      | symfony-app      |
 | LARAVEL_DIR        | Laravel install directory          | laravel-app      | laravel-app      |
@@ -399,7 +399,7 @@ make dev  # or make prod
 make install-symfony
 
 # Finally, modify your .env file to use Symfony
-# APP_FRAMEWORK=symfony
+# APP_WORKSPACE=symfony
 # APP_PUBLIC_DIR=symfony-app/public
 
 # Restart the containers
@@ -414,7 +414,7 @@ make dev  # or make prod
 make install-laravel
 
 # Modify your .env file
-# APP_FRAMEWORK=laravel
+# APP_WORKSPACE=laravel
 # APP_PUBLIC_DIR=laravel-app/public
 
 make restart
@@ -455,7 +455,7 @@ docker-compose exec php bash -c "cd /var/www/html && composer create-project you
 4. **Update your `.env` file** to use the new framework:
 
 ```
-APP_FRAMEWORK=yourframework
+APP_WORKSPACE=yourframework
 APP_PUBLIC_DIR=yourframework-app/public
 ```
 

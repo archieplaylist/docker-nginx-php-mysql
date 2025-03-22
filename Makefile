@@ -268,7 +268,7 @@ install-symfony:
 	@$(DOCKER_EXEC) $(PHP_CONTAINER) bash -c "cd /var/www/html && composer create-project symfony/skeleton $(if $(SYMFONY_DIR),$(SYMFONY_DIR),symfony-app)"
 	@echo "${GREEN}Symfony installed in ./web/$(if $(SYMFONY_DIR),$(SYMFONY_DIR),symfony-app)!${NC}"
 	@echo "${YELLOW}To configure Nginx for Symfony, please update your .env file with:${NC}"
-	@echo "${YELLOW}APP_FRAMEWORK=symfony${NC}"
+	@echo "${YELLOW}APP_WORKSPACE=symfony${NC}"
 	@echo "${YELLOW}APP_PUBLIC_DIR=$(if $(SYMFONY_DIR),$(SYMFONY_DIR),symfony-app)/public${NC}"
 	@echo "${YELLOW}Then restart the containers with: make restart${NC}"
 
@@ -277,6 +277,6 @@ install-laravel:
 	@$(DOCKER_EXEC) $(PHP_CONTAINER) bash -c "cd /var/www/html && composer create-project laravel/laravel $(if $(LARAVEL_DIR),$(LARAVEL_DIR),laravel-app)"
 	@echo "${GREEN}Laravel installed in ./web/$(if $(LARAVEL_DIR),$(LARAVEL_DIR),laravel-app)!${NC}"
 	@echo "${YELLOW}To configure Nginx for Laravel, please update your .env file with:${NC}"
-	@echo "${YELLOW}APP_FRAMEWORK=laravel${NC}"
+	@echo "${YELLOW}APP_WORKSPACE=laravel${NC}"
 	@echo "${YELLOW}APP_PUBLIC_DIR=$(if $(LARAVEL_DIR),$(LARAVEL_DIR),laravel-app)/public${NC}"
 	@echo "${YELLOW}Then restart the containers with: make restart${NC}"
