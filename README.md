@@ -107,9 +107,9 @@ Common configuration options:
 
 | Variable           | Description                        | Default (Dev)    | Default (Prod)   |
 |--------------------|------------------------------------|------------------|------------------|
-| PHP_VERSION        | PHP version to use                 | 8.2              | 8.2              |
+| PHP_VERSION        | PHP version to use                 | 8.3              | 8.3              |
 | PHP_TARGET         | PHP image target                   | dev              | base             |
-| MYSQL_VERSION      | MySQL version                      | 8.0              | 8.0              |
+| MYSQL_VERSION      | MySQL version                      | 9.2              | 9.2              |
 | PHP_DISPLAY_ERRORS | Show PHP errors                    | 1                | 0                |
 | PHP_MEMORY_LIMIT   | PHP memory limit                   | 256M             | 128M             |
 | XDEBUG_ENABLED     | Enable Xdebug                      | 1                | 0                |
@@ -282,10 +282,10 @@ With this setup, you'll have a powerful debugging environment that helps you ide
 │   ├── php/               # PHP configuration
 │   └── ssl/               # SSL certificates
 ├── web/                   # Web root directory
-│   ├── app/               # Application code
-│   │   ├── src/           # Source code
-│   │   └── test/          # Test code
-│   └── public/            # Public files
+│   └── app/               # Application code
+│       ├── public/        # Public files
+│       ├── src/           # Source files
+│       └── tests/         # Test code
 ├── .env.dev               # Development environment variables
 ├── .env.prod              # Production environment variables
 ├── docker-compose.yml     # Docker Compose configuration
