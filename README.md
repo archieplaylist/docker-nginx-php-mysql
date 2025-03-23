@@ -312,10 +312,16 @@ With this setup, you'll have a powerful debugging environment that helps you ide
 │   ├── php/               # PHP configuration
 │   └── ssl/               # SSL certificates
 ├── web/                   # Web root directory
-│   └── app/               # Application code
+│   └── app/               # Default application code
 │       ├── public/        # Public files
 │       ├── src/           # Source files
 │       └── tests/         # Test code
+├── docs/                  # Documentation
+│   ├── api/               # API documentation (generated)
+│   └── *.md               # Markdown documentation files
+├── data/                  # Persistent data
+│   └── db/                # Database files
+│       └── dumps/         # Database dumps
 ├── .env.dev               # Development environment variables
 ├── .env.prod              # Production environment variables
 ├── docker-compose.yml     # Docker Compose configuration
