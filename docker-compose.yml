@@ -104,6 +104,34 @@ services:
         profiles:
             - ${PHPMYADMIN_PROFILE:-dev}
 
+    mailhog:
+        image: mailhog/mailhog
+        ports:
+            - "${MAILHOG_SMTP_PORT:-1025}:1025"  # SMTP port for sending emails
+            - "${MAILHOG_UI_PORT:-8025}:8025"    # Web interface for viewing emails
+        environment:
+            - MH_SMTP_BIND_ADDR=0.0.0.0:1025     # Binding address for the SMTP server
+            - MH_API_BIND_ADDR=0.0.0.0:8025      # Binding address for the API
+            - MH_UI_BIND_ADDR=0.0.0.0:8025       # Binding address for the user interface
+            - MH_STORAGE=${MAILHOG_STORAGE:-memory} # Storage method (memory, mongodb)
+            - MH_HOSTNAME=${MAILHOG_HOSTNAME:-mailhog} # Hostname to use for EHLO/HELO links
+            - MH_CORS_ORIGIN=${MAILHOG_CORS_ORIGIN:-*} # CORS Configuration
+        networks:
+            - backend-network
+        profiles:
+            - ${PHPMYADMIN_PROFILE:-dev}
+
+    apidocs:
+        image: nginx:alpine
+        volumes:
+            - "./docs/api/html:/usr/share/nginx/html:ro"
+        ports:
+            - "8081:80"
+        networks:
+            - frontend-network
+        profiles:
+            - ${PHPMYADMIN_PROFILE:-dev}
+
 volumes:
-  mysql_data:
-    name: ${PROJECT_NAME:-docker_nginx_php_mysql}_mysql_data
+    mysql_data:
+        name: ${PROJECT_NAME:-docker_nginx_php_mysql}_mysql_data
