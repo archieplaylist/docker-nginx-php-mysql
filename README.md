@@ -122,19 +122,21 @@ You can customize the environments by editing:
 
 Common configuration options:
 
-| Variable           | Description                        | Default (Dev)    | Default (Prod)   |
-|--------------------|------------------------------------|------------------|------------------|
-| PHP_VERSION        | PHP version to use                 | 8.3              | 8.3              |
-| PHP_TARGET         | PHP image target                   | dev              | base             |
-| MYSQL_VERSION      | MySQL version                      | 9.2              | 9.2              |
-| PHP_DISPLAY_ERRORS | Show PHP errors                    | 1                | 0                |
-| PHP_MEMORY_LIMIT   | PHP memory limit                   | 256M             | 128M             |
-| XDEBUG_ENABLED     | Enable Xdebug                      | 1                | 0                |
-| APP_WORKSPACE      | Workspace type                     | default          | default          |
-| APP_PUBLIC_DIR     | Public directory                   | public           | public           |
-| SYMFONY_DIR        | Symfony install directory          | symfony-app      | symfony-app      |
-| LARAVEL_DIR        | Laravel install directory          | laravel-app      | laravel-app      |
-| PROJECT_NAME       | Project name for Docker volumes    | docker_nginx_php_mysql | docker_nginx_php_mysql |
+| Variable               | Description                           | Default (Dev)        | Default (Prod)       |
+|------------------------|---------------------------------------|----------------------|----------------------|
+| PHP_VERSION            | PHP version to use                    | 8.3                  | 8.3                  |
+| PHP_TARGET             | PHP image target                      | dev                  | base                 |
+| MYSQL_VERSION          | MySQL version                         | 9.2                  | 9.2                  |
+| PHP_DISPLAY_ERRORS     | Show PHP errors                       | 1                    | 0                    |
+| PHP_MEMORY_LIMIT       | PHP memory limit                      | 256M                 | 128M                 |
+| XDEBUG_ENABLED         | Enable Xdebug                         | 1                    | 0                    |
+| APP_WORKSPACE          | Workspace type                        | default              | default              |
+| APP_DIR                | Application directory                 | app                  | app                  |
+| APP_PUBLIC_DIR         | Public directory (auto-generated)     | app/public           | app/public           |
+| PROJECT_NAME           | Project name for Docker volumes       | docker_nginx_php_mysql | docker_nginx_php_mysql |
+| MAILHOG_SMTP_PORT      | MailHog SMTP port                     | 1025                 | -                    |
+| MAILHOG_UI_PORT        | MailHog web interface port            | 8025                 | -                    |
+| MAILHOG_STORAGE        | MailHog storage mode                  | memory               | -                    |
 
 ## 🔍 Debugging with Xdebug
 
