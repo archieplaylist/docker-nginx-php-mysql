@@ -384,6 +384,8 @@ The Makefile provides many helpful commands:
 | composer-install  | Install PHP dependencies                     |
 | composer-update   | Update PHP dependencies                      |
 | composer-autoload | Update the autoloader                        |
+| composer-script   | Run custom scripts defined in composer.json  |
+| php-connect       | Open an interactive shell in PHP container   |
 | test              | Run tests                                    |
 | code-sniff        | Check code style with PHP_CodeSniffer        |
 | phpmd             | Analyze code with PHP Mess Detector          |
