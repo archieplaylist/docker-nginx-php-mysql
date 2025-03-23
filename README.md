@@ -398,8 +398,6 @@ The Makefile provides many helpful commands:
 | db-dump          | Backup all databases                  |
 | db-restore       | Restore database from backup          |
 | db-connect       | Connect to MySQL shell                |
-| db-volume-create | Create MySQL data volume              |
-| db-volume-remove | Remove MySQL data volume              |
 
 ### Framework Installation
 
