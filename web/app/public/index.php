@@ -3,8 +3,10 @@
 include '../vendor/autoload.php';
 $foo = new App\Foo();
 
-?><!DOCTYPE html>
+?>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -192,17 +194,18 @@ $foo = new App\Foo();
             .grid {
                 grid-template-columns: 1fr;
             }
-            
+
             header h1 {
                 font-size: 2rem;
             }
-            
+
             .container {
                 padding: 1rem;
             }
         }
     </style>
 </head>
+
 <body>
     <header>
         <h1>Docker NGINX PHP MySQL</h1>
@@ -239,7 +242,7 @@ $foo = new App\Foo();
                         <span class="badge">make prod</span>
                     </div>
                 </div>
-                
+
                 <div class="feature-card">
                     <h3>Framework Support</h3>
                     <p>Ready-to-use support for popular PHP frameworks including Symfony and Laravel.</p>
@@ -248,17 +251,52 @@ $foo = new App\Foo();
                         <span class="badge">Laravel</span>
                     </div>
                 </div>
-                
+
                 <div class="feature-card">
                     <h3>Debugging Tools</h3>
                     <p>Integrated with Xdebug and development tools to make debugging efficient and painless.</p>
                 </div>
-                
+
                 <div class="feature-card">
                     <h3>Security Features</h3>
                     <p>Network separation with frontend and backend layers for enhanced security.</p>
                 </div>
             </div>
+
+            <h2 style="margin: 2rem 0 1.5rem">Developer Tools</h2>
+            <div class="grid">
+                <a href="http://localhost:8080" target="_blank" class="feature-card" style="text-decoration: none; color: inherit;">
+                    <h3>
+                        PHPMyAdmin
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; margin-left: 5px;">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                        </svg>
+                    </h3>
+                    <p>Manage your MySQL databases through a user-friendly web interface.</p>
+                    <div style="margin-top: 0.75rem">
+                        <span class="badge" style="background-color: #FF9800;">Port 8080</span>
+                    </div>
+                </a>
+
+                <a href="http://localhost:8025" target="_blank" class="feature-card" style="text-decoration: none; color: inherit;">
+                    <h3>
+                        MailHog
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; margin-left: 5px;">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                        </svg>
+                    </h3>
+                    <p>Test email functionality without sending real emails. Perfect for development.</p>
+                    <div style="margin-top: 0.75rem">
+                        <span class="badge" style="background-color: #FF9800;">WebUI: 8025</span>
+                        <span class="badge" style="background-color: #4CAF50;">SMTP: 1025</span>
+                    </div>
+                </a>
+            </div>
+
         </main>
     </div>
 
@@ -268,4 +306,5 @@ $foo = new App\Foo();
         </div>
     </footer>
 </body>
+
 </html>
