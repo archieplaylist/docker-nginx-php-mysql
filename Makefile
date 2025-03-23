@@ -67,15 +67,12 @@ help:
 	@echo "${GREEN}Database commands:${NC}"
 	@echo "  ${YELLOW}db-dump${NC}              Create backup of all databases"
 	@echo "  ${YELLOW}db-restore${NC}           Restore backup of all databases"
-	@echo "  ${YELLOW}db-connect${NC}           Connect to MySQL shell"
 	@echo ""
 	@echo "${GREEN}Utility commands:${NC}"
-	@echo "  ${YELLOW}php-connect${NC}          Connect to PHP container shell"
 	@echo "  ${YELLOW}gen-certs${NC}            Generate SSL certificates"
 	@echo "  ${YELLOW}enable-ssl${NC}           Enable SSL in Nginx configuration"
 	@echo "  ${YELLOW}env-clean${NC}            Clean environment resources"
 	@echo "  ${YELLOW}env-reset${NC}            Reset environment (including volumes)"
-	@echo "  ${YELLOW}apidoc${NC}               Generate API documentation"
 	@echo ""
 	@echo "${GREEN}Framework commands:${NC}"
 	@echo "  ${YELLOW}install-symfony${NC}      Install Symfony framework"
@@ -84,6 +81,15 @@ help:
 	@echo "${GREEN}Debugging commands:${NC}"
 	@echo "  ${YELLOW}xdebug-check${NC}         Check Xdebug configuration"
 	@echo "  ${YELLOW}xdebug-restart${NC}       Restart PHP container with Xdebug"
+	@echo ""
+	@echo "${GREEN}Documentation commands:${NC}"
+	@echo "  ${YELLOW}apidocs-generate${NC}     Generate API documentation"
+	@echo "  ${YELLOW}apidocs-serve${NC}        Serve the API documentation via web server"
+	@echo "  ${YELLOW}apidocs${NC}              Generate and serve API documentation"
+	@echo ""
+	@echo "${GREEN}Container access commands:${NC}"
+	@echo "  ${YELLOW}php-connect${NC}          Connect to PHP container shell"
+	@echo "  ${YELLOW}db-connect${NC}           Connect to MySQL shell"
 	@echo ""
 	@echo "${GREEN}Application directory:${NC}"
 	@echo "  Current application directory: ${YELLOW}$(APP_DIR)${NC}"
@@ -333,16 +339,6 @@ env-reset: stop
 		echo "${BLUE}Operation canceled.${NC}"; \
 	fi
 
-apidoc: check-app-dir
-	@echo "${BLUE}Generating API documentation for $(APP_DIR)...${NC}"
-	@if [ ! -d "$(APP_ROOT)/src" ]; then \
-		echo "${YELLOW}Source directory $(APP_DIR)/src not found!${NC}"; \
-		exit 1; \
-	fi
-	@docker run --rm -v $(shell pwd):/data phpdoc/phpdoc -i=vendor/ -d /data/web/$(APP_DIR)/src -t /data/web/$(APP_DIR)/doc
-	@$(MAKE) reset-owner dir=$(APP_ROOT)/doc
-	@echo "${GREEN}Documentation generated!${NC}"
-
 apidocs-generate:
 	@echo "${BLUE}Generating API documentation for $(APP_DIR)...${NC}"
 	@if [ ! -d "$(APP_ROOT)/src" ]; then \
@@ -353,6 +349,14 @@ apidocs-generate:
 	@docker run --rm -v $(shell pwd):/data phpdoc/phpdoc -i=vendor/ -d /data/web/$(APP_DIR)/src -t /data/docs/api/html
 	@$(MAKE) reset-owner dir=./docs/api
 	@echo "${GREEN}Documentation generated in ./docs/api/html!${NC}"
+
+apidocs-serve:
+	@echo "${BLUE}Starting API documentation server...${NC}"
+	@$(DOCKER_COMPOSE) --profile dev up -d apidocs
+	@echo "${GREEN}API documentation available at http://localhost:8081${NC}"
+
+apidocs: apidocs-generate apidocs-serve
+	@echo "${BLUE}API documentation is now ready and being served.${NC}"
 
 reset-owner:
 	@chown -R $(CURRENT_USER):$(CURRENT_GID) $(dir) 2>/dev/null || true

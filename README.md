@@ -389,9 +389,11 @@ The Makefile provides many helpful commands:
 | test              | Run tests                                    |
 | code-sniff        | Check code style with PHP_CodeSniffer        |
 | phpmd             | Analyze code with PHP Mess Detector          |
+| apidocs-generate  | Generate API documentation                   |
+| apidocs-serve     | Serve the API documentation via web server   |
+| apidocs           | Generate and serve API documentation         |
 | gen-certs         | Generate SSL certificates                    |
 | enable-ssl        | Enable SSL in Nginx configuration            |
-| apidoc            | Generate API documentation                   |
 
 ### Database Management
 
