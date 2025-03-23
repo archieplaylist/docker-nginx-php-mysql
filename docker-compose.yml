@@ -44,7 +44,8 @@ services:
         environment:
             - NGINX_HOST=${NGINX_HOST}
             - APP_WORKSPACE=${APP_WORKSPACE:-default}
-            - APP_PUBLIC_DIR=${APP_PUBLIC_DIR:-public}
+            - APP_DIR=${APP_DIR:-app}
+            - APP_PUBLIC_DIR=${APP_DIR:-app}/public
             - NGINX_WORKSPACE_DIR=${NGINX_WORKSPACE_DIR:-workspace}
         command: /bin/sh -c "envsubst '$$NGINX_HOST $$APP_WORKSPACE $$APP_PUBLIC_DIR $$NGINX_WORKSPACE_DIR' < /etc/nginx/conf.d/default.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
         restart: always
