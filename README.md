@@ -124,19 +124,31 @@ Common configuration options:
 
 | Variable               | Description                           | Default (Dev)        | Default (Prod)       |
 |------------------------|---------------------------------------|----------------------|----------------------|
-| PHP_VERSION            | PHP version to use                    | 8.3                  | 8.3                  |
-| PHP_TARGET             | PHP image target                      | dev                  | base                 |
-| MYSQL_VERSION          | MySQL version                         | 9.2                  | 9.2                  |
-| PHP_DISPLAY_ERRORS     | Show PHP errors                       | 1                    | 0                    |
-| PHP_MEMORY_LIMIT       | PHP memory limit                      | 256M                 | 128M                 |
-| XDEBUG_ENABLED         | Enable Xdebug                         | 1                    | 0                    |
+| APP_NAME               | Project name for Docker volumes       | docker_nginx_php_mysql | docker_nginx_php_mysql |
 | APP_WORKSPACE          | Workspace type                        | default              | default              |
 | APP_DIR                | Application directory                 | app                  | app                  |
 | APP_PUBLIC_DIR         | Public directory (auto-generated)     | app/public           | app/public           |
-| PROJECT_NAME           | Project name for Docker volumes       | docker_nginx_php_mysql | docker_nginx_php_mysql |
-| MAILHOG_SMTP_PORT      | MailHog SMTP port                     | 1025                 | -                    |
-| MAILHOG_UI_PORT        | MailHog web interface port            | 8025                 | -                    |
-| MAILHOG_STORAGE        | MailHog storage mode                  | memory               | -                    |
+| NGINX_HOST             | Nginx server hostname                 | localhost            | your-domain.com      |
+| NGINX_PORT             | Nginx HTTP port                       | 8000                 | 8000                 |
+| NGINX_SSL_PORT         | Nginx HTTPS port                      | 3000                 | 3000                 |
+| PHP_VERSION            | PHP version to use                    | 8.3                  | 8.3                  |
+| PHP_TARGET             | PHP image target                      | dev                  | base                 |
+| PHP_INI                | PHP configuration file                | php.dev.ini          | php.prod.ini         |
+| XDEBUG_ENABLED         | Enable Xdebug                         | 1                    | 0                    |
+| MYSQL_VERSION          | MySQL version                         | 9.2                  | 9.2                  |
+| MYSQL_HOST             | MySQL server hostname                 | mysql                | mysql                |
+| MYSQL_PORT             | MySQL server port                     | 8989                 | 8989                 |
+| MYSQL_DATABASE         | MySQL database name                   | test                 | production_db        |
+| MYSQL_ROOT_PASSWORD    | MySQL root password                   | root                 | [strong-password]    |
+| MYSQL_USER             | MySQL application user                | dev                  | app_user             |
+| MYSQL_PASSWORD         | MySQL application password            | dev                  | [strong-password]    |
+| PHPMYADMIN_PORT        | PHPMyAdmin web interface port         | 8080                 | none                 |
+| PHPMYADMIN_PROFILE     | PHPMyAdmin Docker profile             | dev                  | none                 |
+| MAILHOG_SMTP_PORT      | MailHog SMTP port                     | 1025                 | none                 |
+| MAILHOG_UI_PORT        | MailHog web interface port            | 8025                 | none                 |
+| MAILHOG_PROFILE        | MailHog Docker profile                | dev                  | none                 |
+| APIDOCS_PORT           | API docs web interface port           | 8081                 | none                 |
+| APIDOCS_PROFILE        | API docs Docker profile               | dev                  | none                 |
 
 ## 🔍 Debugging with Xdebug
 
@@ -338,9 +350,6 @@ make gen-certs
 
 # Enable SSL in Nginx configuration
 make enable-ssl
-
-# Restart the environment
-make restart
 ```
 
 You can then access your site via HTTPS at [https://localhost:3000](https://localhost:3000).
@@ -541,7 +550,18 @@ You can add SQL scripts to `docker/mysql/init/` directory. These scripts will be
 
 ### Customizing PHP
 
-To customize PHP settings, edit the `etc/php/php.ini` file.
+This environment uses separate PHP configuration files for development and production:
+
+- `etc/php/php.dev.ini`: Development configuration with debug features enabled
+- `etc/php/php.prod.ini`: Production configuration optimized for performance and security
+
+You can customize these files to adjust PHP settings for each environment. The appropriate file is selected based on the `PHP_INI` environment variable.
+
+After changing any settings, restart the containers:
+
+```bash
+make restart
+```
 
 ### Customizing Nginx
 
