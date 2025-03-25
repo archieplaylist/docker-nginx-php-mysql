@@ -37,8 +37,6 @@ check-app-dir:
 		exit 1; \
 	fi
 
-.PHONY: ... db-dump db-restore db-connect php-connect ...
-
 help:
 	@echo ""
 	@echo "${BLUE}Docker Nginx PHP MySQL - Version 2.0${NC}"
@@ -71,8 +69,6 @@ help:
 	@echo "${GREEN}Utility commands:${NC}"
 	@echo "  ${YELLOW}gen-certs${NC}            Generate SSL certificates"
 	@echo "  ${YELLOW}enable-ssl${NC}           Enable SSL in Nginx configuration"
-	@echo "  ${YELLOW}env-clean${NC}            Clean environment resources"
-	@echo "  ${YELLOW}env-reset${NC}            Reset environment (including volumes)"
 	@echo ""
 	@echo "${GREEN}Framework commands:${NC}"
 	@echo "  ${YELLOW}install-symfony${NC}      Install Symfony framework"
@@ -269,16 +265,16 @@ db-connect:
 	fi
 
 # Utility commands
-.PHONY: php-connect gen-certs enable-ssl env-clean env-reset apidoc reset-owner
+.PHONY: php-connect gen-certs enable-ssl apidocs-generate apidocs-serve apidocs reset-owner
 
 php-connect:
-	@echo "${BLUE}Connexion au shell du conteneur PHP...${NC}"
+	@echo "${BLUE}Connecting to PHP container shell...${NC}"
 	@if ! $(DOCKER_COMPOSE) ps --services --filter "status=running" | grep -q $(PHP_CONTAINER); then \
-		echo "${YELLOW}Le conteneur PHP n'est pas en cours d'exécution!${NC}"; \
+		echo "${YELLOW}PHP container is not running!${NC}"; \
 		exit 1; \
 	fi
 	@$(DOCKER_COMPOSE) exec -it $(PHP_CONTAINER) bash
-	@echo "${GREEN}Session shell du conteneur PHP terminée.${NC}"
+	@echo "${GREEN}PHP container shell session ended.${NC}"
 
 gen-certs:
 	@echo "${BLUE}Generating SSL certificates...${NC}"
@@ -305,39 +301,6 @@ enable-ssl:
 		sh -c 'apk add --no-cache sed && sed -i "/^# server {/,/^# }/ s/^# //" /etc/nginx/default.template.conf && sed -i "/^#[[:space:]]*$$/s/^#//" /etc/nginx/default.template.conf'
 	@$(MAKE) restart
 	@echo "${GREEN}SSL has been enabled. Access your site at https://${NGINX_HOST}:3000${NC}"
-
-env-clean:
-	@echo "${BLUE}Cleaning environment resources...${NC}"
-	@echo "${YELLOW}This will remove unused resources related to this project${NC}"
-	@echo "${YELLOW}Are you sure you want to continue? [y/N] ${NC}"
-	@read -r confirmation; \
-	if [ "$$confirmation" = "y" ] || [ "$$confirmation" = "Y" ]; then \
-		echo "${BLUE}Removing unused project resources...${NC}"; \
-		docker container prune -f --filter "label=com.docker.compose.project=${PROJECT_NAME:-docker_nginx_php_mysql}"; \
-		docker network prune -f --filter "label=com.docker.compose.project=${PROJECT_NAME:-docker_nginx_php_mysql}"; \
-		rm -rf .phpdoc; \
-		rm -rf etc/ssl/*; \
-		echo "${GREEN}Environment cleaned!${NC}"; \
-	else \
-		echo "${BLUE}Operation canceled.${NC}"; \
-	fi
-
-env-reset: stop
-	@echo "${YELLOW}WARNING: This will reset the project environment including all volumes and data!${NC}"
-	@echo "${YELLOW}Are you sure you want to continue? [y/N] ${NC}"
-	@read -r confirmation; \
-	if [ "$$confirmation" = "y" ] || [ "$$confirmation" = "Y" ]; then \
-		echo "${BLUE}Resetting project environment...${NC}"; \
-		docker container prune -f --filter "label=com.docker.compose.project=${PROJECT_NAME:-docker_nginx_php_mysql}"; \
-		docker network prune -f --filter "label=com.docker.compose.project=${PROJECT_NAME:-docker_nginx_php_mysql}"; \
-		docker volume rm $(shell docker volume ls -q -f name=${PROJECT_NAME:-docker_nginx_php_mysql}) 2>/dev/null || true; \
-		rm -rf .phpdoc; \
-		rm -rf etc/ssl/*; \
-		rm -rf $(MYSQL_DUMPS_DIR)/*; \
-		echo "${GREEN}Environment reset completed!${NC}"; \
-	else \
-		echo "${BLUE}Operation canceled.${NC}"; \
-	fi
 
 apidocs-generate:
 	@echo "${BLUE}Generating API documentation for $(APP_DIR)...${NC}"
