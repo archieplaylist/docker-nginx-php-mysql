@@ -17,7 +17,7 @@ services:
             - MYSQL_USER=${MYSQL_USER}
             - MYSQL_PASSWORD=${MYSQL_PASSWORD}
         ports:
-            - "8989:3306"
+            - "${MYSQL_PORT:-8989}:3306"
         volumes:
             - mysql_data:/var/lib/mysql
             - ./docker/mysql/init:/docker-entrypoint-initdb.d
@@ -39,8 +39,8 @@ services:
             - "./etc/ssl:/etc/ssl"
             - "./web:/var/www/html"
         ports:
-            - "8000:80"
-            - "3000:443"
+            - "${NGINX_PORT:-8000}:80"
+            - "${NGINX_SSL_PORT:-3000}:443"
         environment:
             - NGINX_HOST=${NGINX_HOST}
             - APP_WORKSPACE=${APP_WORKSPACE:-default}
@@ -69,7 +69,7 @@ services:
                 PHP_TARGET: ${PHP_TARGET:-dev}
         restart: always
         volumes:
-            - "./etc/php/php.ini:/usr/local/etc/php/conf.d/99-custom.ini"
+            - "./etc/php/${PHP_INI:-php.dev.ini}:/usr/local/etc/php/conf.d/99-custom.ini"
             - "./web:/var/www/html"
         environment:
             - PHP_DISPLAY_ERRORS=${PHP_DISPLAY_ERRORS:-1}
@@ -87,7 +87,7 @@ services:
         image: phpmyadmin/phpmyadmin
         container_name: phpmyadmin
         ports:
-            - "8080:80"
+            - "${PHPMYADMIN_PORT:-8080}:80"
         environment:
             - PMA_ARBITRARY=1
             - PMA_HOST=${MYSQL_HOST}
@@ -108,13 +108,13 @@ services:
     mailhog:
         image: mailhog/mailhog
         ports:
-            - "${MAILHOG_SMTP_PORT:-1025}:1025"  # SMTP port for sending emails
-            - "${MAILHOG_UI_PORT:-8025}:8025"    # Web interface for viewing emails
+            - "${MAILHOG_SMTP_PORT:-1025}:1025"        # SMTP port for sending emails
+            - "${MAILHOG_UI_PORT:-8025}:8025"          # Web interface for viewing emails
         environment:
-            - MH_SMTP_BIND_ADDR=0.0.0.0:1025     # Binding address for the SMTP server
-            - MH_API_BIND_ADDR=0.0.0.0:8025      # Binding address for the API
-            - MH_UI_BIND_ADDR=0.0.0.0:8025       # Binding address for the user interface
-            - MH_STORAGE=${MAILHOG_STORAGE:-memory} # Storage method (memory, mongodb)
+            - MH_SMTP_BIND_ADDR=0.0.0.0:1025           # Binding address for the SMTP server
+            - MH_API_BIND_ADDR=0.0.0.0:8025            # Binding address for the API
+            - MH_UI_BIND_ADDR=0.0.0.0:8025             # Binding address for the user interface
+            - MH_STORAGE=${MAILHOG_STORAGE:-memory}    # Storage method (memory, mongodb)
             - MH_HOSTNAME=${MAILHOG_HOSTNAME:-mailhog} # Hostname to use for EHLO/HELO links
             - MH_CORS_ORIGIN=${MAILHOG_CORS_ORIGIN:-*} # CORS Configuration
         networks:
@@ -127,7 +127,7 @@ services:
         volumes:
             - "./docs/api/html:/usr/share/nginx/html:ro"
         ports:
-            - "8081:80"
+            - "${APIDOCS_PORT:-8081}:80"
         networks:
             - frontend-network
         profiles:
@@ -135,4 +135,4 @@ services:
 
 volumes:
     mysql_data:
-        name: ${PROJECT_NAME:-docker_nginx_php_mysql}_mysql_data
+        name: ${APP_NAME:-docker_nginx_php_mysql}_mysql_data
