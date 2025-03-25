@@ -71,10 +71,6 @@ services:
         volumes:
             - "./etc/php/${PHP_INI:-php.dev.ini}:/usr/local/etc/php/conf.d/99-custom.ini"
             - "./web:/var/www/html"
-        environment:
-            - PHP_DISPLAY_ERRORS=${PHP_DISPLAY_ERRORS:-1}
-            - PHP_MEMORY_LIMIT=${PHP_MEMORY_LIMIT:-256M}
-            - XDEBUG_ENABLED=${XDEBUG_ENABLED:-1}
         networks:
             - backend-network
         healthcheck:
@@ -120,7 +116,7 @@ services:
         networks:
             - backend-network
         profiles:
-            - ${PHPMYADMIN_PROFILE:-dev}
+            - ${MAILHOG_PROFILE:-dev}
 
     apidocs:
         image: nginx:alpine
@@ -131,7 +127,7 @@ services:
         networks:
             - frontend-network
         profiles:
-            - ${PHPMYADMIN_PROFILE:-dev}
+            - ${APIDOCS_PROFILE:-dev}
 
 volumes:
     mysql_data:
