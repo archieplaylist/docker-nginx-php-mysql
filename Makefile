@@ -1,9 +1,9 @@
-# Makefile for Docker Nginx PHP Composer MySQL
+# Makefile for Docker Nginx PHP Composer MariaDB
 
 include .env
 
-# MySQL
-MYSQL_DUMPS_DIR=data/db/dumps
+# MariaDB
+MARIADB_DUMPS_DIR=data/db/dumps
 
 help:
 	@echo ""
@@ -18,8 +18,10 @@ help:
 	@echo "  docker-stop         Stop and clear all services"
 	@echo "  gen-certs           Generate SSL certificates"
 	@echo "  logs                Follow log output"
-	@echo "  mysql-dump          Create backup of all databases"
-	@echo "  mysql-restore       Restore backup of all databases"
+	@echo "  mariadb-dump        Create backup of MariaDB databases"
+	@echo "  mariadb-restore     Restore backup of MariaDB databases"
+	@echo "  postgres-dump       Create backup of PostgreSQL databases"
+	@echo "  postgres-restore    Restore backup of PostgreSQL databases"
 	@echo "  phpmd               Analyse the API with PHP Mess Detector"
 	@echo "  test                Test application"
 
@@ -31,8 +33,9 @@ apidoc:
 	@make resetOwner
 
 clean:
-	@rm -Rf data/db/mysql/*
-	@rm -Rf $(MYSQL_DUMPS_DIR)/*
+	@rm -Rf data/db/mariadb/*
+	@rm -Rf data/db/postgres/*
+	@rm -Rf $(MARIADB_DUMPS_DIR)/*
 	@rm -Rf web/app/vendor
 	@rm -Rf web/app/composer.lock
 	@rm -Rf web/app/doc
@@ -59,13 +62,21 @@ gen-certs:
 logs:
 	@docker-compose logs -f
 
-mysql-dump:
-	@mkdir -p $(MYSQL_DUMPS_DIR)
-	@docker exec $(shell docker-compose ps -q mysqldb) mysqldump --all-databases -u"$(MYSQL_ROOT_USER)" -p"$(MYSQL_ROOT_PASSWORD)" > $(MYSQL_DUMPS_DIR)/db.sql 2>/dev/null
+mariadb-dump:
+	@mkdir -p $(MARIADB_DUMPS_DIR)
+	@docker exec $(shell docker-compose ps -q mariadb) mariadb-dump --all-databases -u"$(MARIADB_ROOT_USER)" -p"$(MARIADB_ROOT_PASSWORD)" > $(MARIADB_DUMPS_DIR)/mariadb.sql 2>/dev/null
 	@make resetOwner
 
-mysql-restore:
-	@docker exec -i $(shell docker-compose ps -q mysqldb) mysql -u"$(MYSQL_ROOT_USER)" -p"$(MYSQL_ROOT_PASSWORD)" < $(MYSQL_DUMPS_DIR)/db.sql 2>/dev/null
+mariadb-restore:
+	@docker exec -i $(shell docker-compose ps -q mariadb) mariadb -u"$(MARIADB_ROOT_USER)" -p"$(MARIADB_ROOT_PASSWORD)" < $(MARIADB_DUMPS_DIR)/mariadb.sql 2>/dev/null
+
+postgres-dump:
+	@mkdir -p $(MARIADB_DUMPS_DIR)
+	@docker exec $(shell docker-compose ps -q postgres) pg_dumpall -U "$(POSTGRES_USER)" > $(MARIADB_DUMPS_DIR)/postgres.sql 2>/dev/null
+	@make resetOwner
+
+postgres-restore:
+	@docker exec -i $(shell docker-compose ps -q postgres) psql -U "$(POSTGRES_USER)" < $(MARIADB_DUMPS_DIR)/postgres.sql 2>/dev/null
 
 phpmd:
 	@docker-compose exec -T php \
@@ -77,6 +88,6 @@ test: code-sniff
 	@make resetOwner
 
 resetOwner:
-	@$(shell chown -Rf $(SUDO_USER):$(shell id -g -n $(SUDO_USER)) $(MYSQL_DUMPS_DIR) "$(shell pwd)/etc/ssl" "$(shell pwd)/web/app" 2> /dev/null)
+	@$(shell chown -Rf $(SUDO_USER):$(shell id -g -n $(SUDO_USER)) $(MARIADB_DUMPS_DIR) "$(shell pwd)/etc/ssl" "$(shell pwd)/web/app" 2> /dev/null)
 
 .PHONY: clean test code-sniff init
