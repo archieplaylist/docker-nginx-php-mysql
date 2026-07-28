@@ -1,6 +1,6 @@
-# Docker Nginx PHP MariaDB PostgreSQL
+# Docker Nginx PHP MariaDB MySQL PostgreSQL
 
-Docker stack running **Nginx** (reverse proxy + web server), **PHP-FPM**, **Composer**, **MariaDB**, and optional **PostgreSQL**.
+Docker stack running **Nginx** (reverse proxy + web server), **PHP-FPM**, **Composer**, and your choice of database: **MariaDB**, **MySQL**, or **PostgreSQL**.
 
 ## Overview
 
@@ -78,10 +78,13 @@ sudo apt install build-essential
 * [PHP-FPM](https://hub.docker.com/r/archieplaylist/php-fpm/)
 * [Composer](https://hub.docker.com/_/composer/)
 * [MariaDB](https://hub.docker.com/_/mariadb/)
+* [MySQL](https://hub.docker.com/_/mysql/)
 * [PostgreSQL](https://hub.docker.com/_/postgres/)
 * [Generate Certificate](https://hub.docker.com/r/jacoelho/generate-certificate/)
 
-You should be careful when installing third party web servers such as MariaDB or Nginx.
+You should be careful when installing third party web servers such as MariaDB, MySQL, or Nginx.
+
+**Note:** MariaDB and MySQL both use port `3306`. Only activate **one** database profile at a time.
 
 This project uses the following ports :
 
@@ -90,6 +93,7 @@ This project uses the following ports :
 | Nginx (proxy)| 80   |
 | Nginx SSL    | 443  |
 | MariaDB      | 3306 |
+| MySQL        | 3306 |
 | PostgreSQL   | 5432 |
 
 ___
@@ -119,6 +123,7 @@ cd docker-nginx-php-mysql
 │   └── db
 │       ├── dumps
 │       ├── mariadb
+│       ├── mysql
 │       └── postgres
 ├── doc
 ├── docker-compose.yml
@@ -210,11 +215,27 @@ ___
     cp web/app/composer.json.dist web/app/composer.json
     ```
 
-2. Start the application :
+2. Choose a database and start the application:
 
-    ```sh
-    docker compose up -d
-    ```
+    * **MariaDB** (port 3306):
+
+      ```sh
+      docker compose --profile mariadb up -d
+      ```
+
+    * **MySQL** (port 3306):
+
+      ```sh
+      docker compose --profile mysql up -d
+      ```
+
+    * **PostgreSQL** (port 5432):
+
+      ```sh
+      docker compose --profile pg up -d
+      ```
+
+    > **Note:** MariaDB and MySQL both map to port 3306. Do not activate both profiles at the same time.
 
     **Please wait this might take a several minutes...**
 
@@ -227,16 +248,10 @@ ___
     * [http://localhost](http://localhost/)
     * [https://localhost](https://localhost/) ([HTTPS](#configure-nginx-with-ssl-certificates) not configured by default)
 
-4. To also start PostgreSQL (optional):
+4. Stop and clear services
 
     ```sh
-    docker compose --profile pg up -d
-    ```
-
-5. Stop and clear services
-
-    ```sh
-    docker compose down -v
+    docker compose --profile mariadb --profile mysql --profile pg down -v
     ```
 
 ___
@@ -257,6 +272,8 @@ When developing, you can use [Makefile](https://en.wikipedia.org/wiki/Make_(soft
 | logs              | Follow log output                            |
 | mariadb-dump      | Create backup of all MariaDB databases       |
 | mariadb-restore   | Restore backup of all MariaDB databases      |
+| mysql-dump        | Create backup of all MySQL databases         |
+| mysql-restore     | Restore backup of all MySQL databases        |
 | postgres-dump     | Create backup of all PostgreSQL databases    |
 | postgres-restore  | Restore backup of all PostgreSQL databases   |
 | phpmd             | Analyse the API with PHP Mess Detector       |
@@ -348,6 +365,24 @@ make mariadb-dump
 make mariadb-restore
 ```
 
+#### MySQL shell access
+
+```sh
+docker exec -it mysql mysql -u"root" -p"$MYSQL_ROOT_PASSWORD"
+```
+
+#### Creating a backup of all MySQL databases
+
+```sh
+make mysql-dump
+```
+
+#### Restoring a backup of all MySQL databases
+
+```sh
+make mysql-restore
+```
+
 #### PostgreSQL shell access
 
 ```sh
@@ -365,3 +400,80 @@ make postgres-dump
 ```sh
 make postgres-restore
 ```
+
+___
+
+## Production Deployment
+
+This project includes a production-ready override file (`docker-compose.prod.yml`) that hardens the stack with security headers, health checks, resource limits, OPcache, and proper TLS.
+
+### Quick start
+
+1. **Prepare environment**
+
+    ```sh
+    cp .env.prod.example .env.prod
+    ```
+
+    Edit `.env.prod` with your domain and strong passwords. **Never commit `.env.prod`** — it's gitignored.
+
+2. **Set up SSL certificates**
+
+    ```sh
+    make gen-certs
+    ```
+
+    For production, replace the self-signed certs with real ones from [Let's Encrypt](https://letsencrypt.org/) placed in `etc/ssl/`.
+
+3. **Start in production mode**
+
+    ```sh
+    # With MariaDB
+    make docker-start-prod
+
+    # Or with MySQL
+    docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile mysql up -d
+
+    # Or with PostgreSQL
+    docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile pg up -d
+    ```
+
+4. **Check health**
+
+    ```sh
+    make health
+    ```
+
+    All services should show `healthy` within 30-60 seconds.
+
+### What changes in production mode
+
+| Aspect | Dev | Production |
+| --- | --- | --- |
+| **PHP config** | `php.ini` (Xdebug enabled) | `php.prod.ini` (OPcache, no Xdebug, security hardened) |
+| **Nginx proxy** | `proxy.conf` (HTTP only) | `proxy.prod.conf` (HTTPS, security headers, gzip, rate limiting) |
+| **Nginx web** | `default.template.conf` | `default.template.prod.conf` (security headers, gzip, deny hidden files) |
+| **Health checks** | None | All services monitored |
+| **Resource limits** | None | Memory/CPU per service |
+| **SSL** | Commented out | Enabled with modern TLS 1.2/1.3 |
+| **HTTP→HTTPS** | No redirect | Automatic redirect |
+
+### Production commands
+
+```sh
+make docker-start-prod   # Start with production override
+make docker-stop-prod    # Stop and remove containers
+make logs-prod           # Follow production logs
+make health              # Show container health status
+make backup-auto         # Create timestamped database backup
+```
+
+### Security checklist
+
+* [ ] Replace `.env.prod` passwords with strong, unique values
+* [ ] Replace self-signed SSL certs with Let's Encrypt or a trusted CA
+* [ ] Verify CSP in `proxy.prod.conf` matches your application needs
+* [ ] Disable any unused PHP extensions in `php.prod.ini`
+* [ ] Set up automated backups (add `make backup-auto` to your crontab)
+* [ ] Use a reverse proxy firewall (e.g. Cloudflare, AWS WAF) in front of the server
+* [ ] Regularly update base images: `docker compose pull`

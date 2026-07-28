@@ -28,3 +28,6 @@ nbproject/
 
 # SSL Certs
 etc/ssl/
+
+# Production env (contains real secrets — never commit)
+.env.prod

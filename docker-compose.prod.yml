@@ -1,0 +1,100 @@
+# ============================================================================
+# Production Override — docker-compose.prod.yml
+# ============================================================================
+# Use with the base compose file to run in production mode:
+#
+#     docker compose \
+#         -f docker-compose.yml \
+#         -f docker-compose.prod.yml \
+#         --profile mariadb up -d
+#
+# This override:
+#   - Swaps in production config files (PHP, Nginx)
+#   - Adds health checks to all services
+#   - Sets resource limits (memory / CPU)
+# ============================================================================
+
+services:
+    proxy:
+        volumes:
+            - "./etc/nginx/proxy.prod.conf:/etc/nginx/conf.d/default.conf:z"
+        deploy:
+            resources:
+                limits:
+                    memory: 256M
+                    cpus: "0.5"
+        healthcheck:
+            test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
+            interval: 30s
+            timeout: 5s
+            retries: 3
+            start_period: 10s
+
+    web:
+        volumes:
+            - "./etc/nginx/default.template.prod.conf:/etc/nginx/conf.d/default.template:z"
+        deploy:
+            resources:
+                limits:
+                    memory: 256M
+                    cpus: "0.5"
+        healthcheck:
+            test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+            interval: 30s
+            timeout: 5s
+            retries: 3
+            start_period: 10s
+
+    php:
+        volumes:
+            - "./etc/php/php.prod.ini:/usr/local/etc/php/conf.d/php.ini:z"
+        deploy:
+            resources:
+                limits:
+                    memory: 512M
+                    cpus: "1"
+        healthcheck:
+            test: ["CMD-SHELL", "php-fpm-healthcheck || exit 1"]
+            interval: 30s
+            timeout: 5s
+            retries: 3
+            start_period: 15s
+
+    mariadb:
+        deploy:
+            resources:
+                limits:
+                    memory: 1G
+                    cpus: "1"
+        healthcheck:
+            test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
+            start_period: 30s
+
+    mysql:
+        deploy:
+            resources:
+                limits:
+                    memory: 1G
+                    cpus: "1"
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
+            start_period: 30s
+
+    postgres:
+        deploy:
+            resources:
+                limits:
+                    memory: 1G
+                    cpus: "1"
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
+            start_period: 30s

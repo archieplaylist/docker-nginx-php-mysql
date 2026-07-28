@@ -1,4 +1,4 @@
-# Makefile for Docker Nginx PHP Composer MariaDB
+# Makefile for Docker Nginx PHP Composer MariaDB MySQL PostgreSQL
 
 include .env
 
@@ -20,10 +20,19 @@ help:
 	@echo "  logs                Follow log output"
 	@echo "  mariadb-dump        Create backup of MariaDB databases"
 	@echo "  mariadb-restore     Restore backup of MariaDB databases"
+	@echo "  mysql-dump          Create backup of MySQL databases"
+	@echo "  mysql-restore       Restore backup of MySQL databases"
 	@echo "  postgres-dump       Create backup of PostgreSQL databases"
 	@echo "  postgres-restore    Restore backup of PostgreSQL databases"
 	@echo "  phpmd               Analyse the API with PHP Mess Detector"
 	@echo "  test                Test application"
+	@echo ""
+	@echo "Production:"
+	@echo "  docker-start-prod   Start containers with production override"
+	@echo "  docker-stop-prod    Stop containers in production mode"
+	@echo "  logs-prod           Follow log output in production mode"
+	@echo "  health              Check container health status"
+	@echo "  backup-auto         Create timestamped backup of current database"
 
 init:
 	@$(shell cp -n $(shell pwd)/web/app/composer.json.dist $(shell pwd)/web/app/composer.json 2> /dev/null)
@@ -34,6 +43,7 @@ apidoc:
 
 clean:
 	@rm -Rf data/db/mariadb/*
+	@rm -Rf data/db/mysql/*
 	@rm -Rf data/db/postgres/*
 	@rm -Rf $(MARIADB_DUMPS_DIR)/*
 	@rm -Rf web/app/vendor
@@ -78,6 +88,14 @@ postgres-dump:
 postgres-restore:
 	@docker exec -i $(shell docker-compose ps -q postgres) psql -U "$(POSTGRES_USER)" < $(MARIADB_DUMPS_DIR)/postgres.sql 2>/dev/null
 
+mysql-dump:
+	@mkdir -p $(MARIADB_DUMPS_DIR)
+	@docker exec $(shell docker compose ps -q mysql) mysqldump --all-databases -u"$(MYSQL_ROOT_USER)" -p"$(MYSQL_ROOT_PASSWORD)" > $(MARIADB_DUMPS_DIR)/mysql.sql 2>/dev/null
+	@make resetOwner
+
+mysql-restore:
+	@docker exec -i $(shell docker compose ps -q mysql) mysql -u"$(MYSQL_ROOT_USER)" -p"$(MYSQL_ROOT_PASSWORD)" < $(MARIADB_DUMPS_DIR)/mysql.sql 2>/dev/null
+
 phpmd:
 	@docker-compose exec -T php \
 	./app/vendor/bin/phpmd \
@@ -89,5 +107,26 @@ test: code-sniff
 
 resetOwner:
 	@$(shell chown -Rf $(SUDO_USER):$(shell id -g -n $(SUDO_USER)) $(MARIADB_DUMPS_DIR) "$(shell pwd)/etc/ssl" "$(shell pwd)/web/app" 2> /dev/null)
+
+# ---------------------------------------------------------------------------
+# Production targets
+# ---------------------------------------------------------------------------
+COMPOSE_PROD = docker compose -f docker-compose.yml -f docker-compose.prod.yml
+
+docker-start-prod:
+	$(COMPOSE_PROD) up -d
+
+docker-stop-prod:
+	$(COMPOSE_PROD) down
+
+logs-prod:
+	$(COMPOSE_PROD) logs -f
+
+health:
+	$(COMPOSE_PROD) ps
+
+backup-auto:
+	@mkdir -p $(MARIADB_DUMPS_DIR)
+	@docker exec $$($(COMPOSE_PROD) ps -q mariadb 2>/dev/null) mariadb-dump --all-databases -u"$(MARIADB_ROOT_USER)" -p"$(MARIADB_ROOT_PASSWORD)" > "$(MARIADB_DUMPS_DIR)/backup_$$(date +%Y%m%d_%H%M%S).sql" 2>/dev/null && echo "Backup created: $(MARIADB_DUMPS_DIR)/backup_$$(date +%Y%m%d_%H%M%S).sql" || echo "No MariaDB container running"
 
 .PHONY: clean test code-sniff init
