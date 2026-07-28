@@ -1,6 +1,6 @@
-# Nginx PHP MySQL [![Build Status](https://travis-ci.org/nanoninja/docker-nginx-php-mysql.svg?branch=master)](https://travis-ci.org/nanoninja/docker-nginx-php-mysql) [![GitHub version](https://badge.fury.io/gh/nanoninja%2Fdocker-nginx-php-mysql.svg)](https://badge.fury.io/gh/nanoninja%2Fdocker-nginx-php-mysql)
+# Docker Nginx PHP MariaDB PostgreSQL
 
-Docker running Nginx, PHP-FPM, Composer, MySQL and PHPMyAdmin.
+Docker stack running **Nginx** (reverse proxy + web server), **PHP-FPM**, **Composer**, **MariaDB**, and optional **PostgreSQL**.
 
 ## Overview
 
@@ -38,7 +38,7 @@ ___
 
 To run the docker commands without using **sudo** you must add the **docker** group to **your-user**:
 
-```
+```sh
 sudo usermod -aG docker your-user
 ```
 
@@ -50,7 +50,7 @@ All requisites should be available for your distribution. The most important are
 * [Docker](https://docs.docker.com/engine/installation/)
 * [Docker Compose](https://docs.docker.com/compose/install/)
 
-Check if `docker-compose` is already installed by entering the following command : 
+Check if `docker-compose` is already installed by entering the following command:
 
 ```sh
 which docker-compose
@@ -75,22 +75,22 @@ sudo apt install build-essential
 ### Images to use
 
 * [Nginx](https://hub.docker.com/_/nginx/)
-* [MySQL](https://hub.docker.com/_/mysql/)
-* [PHP-FPM](https://hub.docker.com/r/nanoninja/php-fpm/)
+* [PHP-FPM](https://hub.docker.com/r/archieplaylist/php-fpm/)
 * [Composer](https://hub.docker.com/_/composer/)
-* [PHPMyAdmin](https://hub.docker.com/r/phpmyadmin/phpmyadmin/)
+* [MariaDB](https://hub.docker.com/_/mariadb/)
+* [PostgreSQL](https://hub.docker.com/_/postgres/)
 * [Generate Certificate](https://hub.docker.com/r/jacoelho/generate-certificate/)
 
-You should be careful when installing third party web servers such as MySQL or Nginx.
+You should be careful when installing third party web servers such as MariaDB or Nginx.
 
-This project use the following ports :
+This project uses the following ports :
 
-| Server     | Port |
-|------------|------|
-| MySQL      | 8989 |
-| PHPMyAdmin | 8080 |
-| Nginx      | 8000 |
-| Nginx SSL  | 3000 |
+| Server       | Port |
+|--------------|------|
+| Nginx (proxy)| 80   |
+| Nginx SSL    | 443  |
+| MariaDB      | 3306 |
+| PostgreSQL   | 5432 |
 
 ___
 
@@ -112,18 +112,21 @@ cd docker-nginx-php-mysql
 
 ```sh
 .
+├── .env
 ├── Makefile
 ├── README.md
 ├── data
 │   └── db
 │       ├── dumps
-│       └── mysql
+│       ├── mariadb
+│       └── postgres
 ├── doc
 ├── docker-compose.yml
 ├── etc
 │   ├── nginx
 │   │   ├── default.conf
-│   │   └── default.template.conf
+│   │   ├── default.template.conf
+│   │   └── proxy.conf
 │   ├── php
 │   │   └── php.ini
 │   └── ssl
@@ -148,27 +151,32 @@ You can change the host name by editing the `.env` file.
 
 If you modify the host name, do not forget to add it to the `/etc/hosts` file.
 
-1. Generate SSL certificates
+1. Generate SSL certificates using the Makefile:
 
     ```sh
-    source .env && docker run --rm -v $(pwd)/etc/ssl:/certificates -e "SERVER=$NGINX_HOST" jacoelho/generate-certificate
+    make gen-certs
     ```
 
 2. Configure Nginx
 
-    Do not modify the `etc/nginx/default.conf` file, it is overwritten by  `etc/nginx/default.template.conf`
+    There are two Nginx instances — a **reverse proxy** (`etc/nginx/proxy.conf`) and a **web server** (`etc/nginx/default.conf`).
 
-    Edit nginx file `etc/nginx/default.template.conf` and uncomment the SSL server section :
+    * Do not modify `etc/nginx/default.conf` — it is overwritten by `etc/nginx/default.template.conf`.
+    * For SSL on the reverse proxy, edit `etc/nginx/proxy.conf` and uncomment the SSL server section:
 
     ```sh
     # server {
+    #     listen 443 ssl default_server;
+    #     listen [::]:443 ssl default_server;
     #     server_name ${NGINX_HOST};
     #
-    #     listen 443 ssl;
-    #     fastcgi_param HTTPS on;
+    #     ssl_certificate /etc/ssl/server.pem;
+    #     ssl_certificate_key /etc/ssl/server.key;
     #     ...
     # }
     ```
+
+    * For SSL on the web server, edit `etc/nginx/default.template.conf` and uncomment the SSL server section.
 
 ___
 
@@ -191,11 +199,12 @@ For a better integration of Docker to PHPStorm, use the [documentation](https://
     ```sh
     xdebug.remote_host=192.168.0.1 # your IP
     ```
+
 ___
 
 ## Run the application
 
-1. Copying the composer configuration file : 
+1. Copying the composer configuration file:
 
     ```sh
     cp web/app/composer.json.dist web/app/composer.json
@@ -204,25 +213,30 @@ ___
 2. Start the application :
 
     ```sh
-    docker-compose up -d
+    docker compose up -d
     ```
 
     **Please wait this might take a several minutes...**
 
     ```sh
-    docker-compose logs -f # Follow log output
+    docker compose logs -f # Follow log output
     ```
 
 3. Open your favorite browser :
 
-    * [http://localhost:8000](http://localhost:8000/)
-    * [https://localhost:3000](https://localhost:3000/) ([HTTPS](#configure-nginx-with-ssl-certificates) not configured by default)
-    * [http://localhost:8080](http://localhost:8080/) PHPMyAdmin (username: dev, password: dev)
+    * [http://localhost](http://localhost/)
+    * [https://localhost](https://localhost/) ([HTTPS](#configure-nginx-with-ssl-certificates) not configured by default)
 
-4. Stop and clear services
+4. To also start PostgreSQL (optional):
 
     ```sh
-    docker-compose down -v
+    docker compose --profile pg up -d
+    ```
+
+5. Stop and clear services
+
+    ```sh
+    docker compose down -v
     ```
 
 ___
@@ -231,20 +245,22 @@ ___
 
 When developing, you can use [Makefile](https://en.wikipedia.org/wiki/Make_(software)) for doing the following operations :
 
-| Name          | Description                                  |
-|---------------|----------------------------------------------|
-| apidoc        | Generate documentation of API                |
-| clean         | Clean directories for reset                  |
-| code-sniff    | Check the API with PHP Code Sniffer (`PSR2`) |
-| composer-up   | Update PHP dependencies with composer        |
-| docker-start  | Create and start containers                  |
-| docker-stop   | Stop and clear all services                  |
-| gen-certs     | Generate SSL certificates for `nginx`        |
-| logs          | Follow log output                            |
-| mysql-dump    | Create backup of all databases               |
-| mysql-restore | Restore backup of all databases              |
-| phpmd         | Analyse the API with PHP Mess Detector       |
-| test          | Test application with phpunit                |
+| Name              | Description                                  |
+|-------------------|----------------------------------------------|
+| apidoc            | Generate documentation of API                |
+| clean             | Clean directories for reset                  |
+| code-sniff        | Check the API with PHP Code Sniffer (`PSR2`) |
+| composer-up       | Update PHP dependencies with composer        |
+| docker-start      | Create and start containers                  |
+| docker-stop       | Stop and clear all services                  |
+| gen-certs         | Generate SSL certificates for `nginx`        |
+| logs              | Follow log output                            |
+| mariadb-dump      | Create backup of all MariaDB databases       |
+| mariadb-restore   | Restore backup of all MariaDB databases      |
+| postgres-dump     | Create backup of all PostgreSQL databases    |
+| postgres-restore  | Restore backup of all PostgreSQL databases   |
+| phpmd             | Analyse the API with PHP Mess Detector       |
+| test              | Test application with phpunit                |
 
 ### Examples
 
@@ -285,93 +301,67 @@ docker run --rm -v $(pwd):/data phpdoc/phpdoc -i=vendor/ -d /data/web/app/src -t
 ### Testing PHP application with PHPUnit
 
 ```sh
-docker-compose exec -T php ./app/vendor/bin/phpunit --colors=always --configuration ./app
+docker compose exec -T php ./app/vendor/bin/phpunit --colors=always --configuration ./app
 ```
 
 ### Fixing standard code with [PSR2](http://www.php-fig.org/psr/psr-2/)
 
 ```sh
-docker-compose exec -T php ./app/vendor/bin/phpcbf -v --standard=PSR2 ./app/src
+docker compose exec -T php ./app/vendor/bin/phpcbf -v --standard=PSR2 ./app/src
 ```
 
 ### Checking the standard code with [PSR2](http://www.php-fig.org/psr/psr-2/)
 
 ```sh
-docker-compose exec -T php ./app/vendor/bin/phpcs -v --standard=PSR2 ./app/src
+docker compose exec -T php ./app/vendor/bin/phpcs -v --standard=PSR2 ./app/src
 ```
 
 ### Analyzing source code with [PHP Mess Detector](https://phpmd.org/)
 
 ```sh
-docker-compose exec -T php ./app/vendor/bin/phpmd ./app/src text cleancode,codesize,controversial,design,naming,unusedcode
+docker compose exec -T php ./app/vendor/bin/phpmd ./app/src text cleancode,codesize,controversial,design,naming,unusedcode
 ```
 
 ### Checking installed PHP extensions
 
 ```sh
-docker-compose exec php php -m
+docker compose exec php php -m
 ```
 
-### Handling database
+### Handling databases
 
-#### MySQL shell access
+#### MariaDB shell access
 
 ```sh
-docker exec -it mysql bash
+docker exec -it mariadb mariadb -u"$MARIADB_ROOT_USER" -p"$MARIADB_ROOT_PASSWORD"
 ```
 
-and
+#### Creating a backup of all MariaDB databases
 
 ```sh
-mysql -u"$MYSQL_ROOT_USER" -p"$MYSQL_ROOT_PASSWORD"
+make mariadb-dump
 ```
 
-#### Creating a backup of all databases
+#### Restoring a backup of all MariaDB databases
 
 ```sh
-mkdir -p data/db/dumps
+make mariadb-restore
 ```
+
+#### PostgreSQL shell access
 
 ```sh
-source .env && docker exec $(docker-compose ps -q mysqldb) mysqldump --all-databases -u"$MYSQL_ROOT_USER" -p"$MYSQL_ROOT_PASSWORD" > "data/db/dumps/db.sql"
+docker exec -it postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"
 ```
 
-#### Restoring a backup of all databases
+#### Creating a backup of all PostgreSQL databases
 
 ```sh
-source .env && docker exec -i $(docker-compose ps -q mysqldb) mysql -u"$MYSQL_ROOT_USER" -p"$MYSQL_ROOT_PASSWORD" < "data/db/dumps/db.sql"
+make postgres-dump
 ```
 
-#### Creating a backup of single database
-
-**`Notice:`** Replace "YOUR_DB_NAME" by your custom name.
+#### Restoring a backup of all PostgreSQL databases
 
 ```sh
-source .env && docker exec $(docker-compose ps -q mysqldb) mysqldump -u"$MYSQL_ROOT_USER" -p"$MYSQL_ROOT_PASSWORD" --databases YOUR_DB_NAME > "data/db/dumps/YOUR_DB_NAME_dump.sql"
+make postgres-restore
 ```
-
-#### Restoring a backup of single database
-
-```sh
-source .env && docker exec -i $(docker-compose ps -q mysqldb) mysql -u"$MYSQL_ROOT_USER" -p"$MYSQL_ROOT_PASSWORD" < "data/db/dumps/YOUR_DB_NAME_dump.sql"
-```
-
-
-#### Connecting MySQL from [PDO](http://php.net/manual/en/book.pdo.php)
-
-```php
-<?php
-    try {
-        $dsn = 'mysql:host=mysql;dbname=test;charset=utf8;port=3306';
-        $pdo = new PDO($dsn, 'dev', 'dev');
-    } catch (PDOException $e) {
-        echo $e->getMessage();
-    }
-?>
-```
-
-___
-
-## Help us
-
-Any thought, feedback or (hopefully not!)
