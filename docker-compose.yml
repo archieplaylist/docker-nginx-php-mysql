@@ -42,6 +42,7 @@ services:
             - websvr
     composer:
         image: "composer"
+        container_name: composer
         volumes:
             - "./web/app:/app:z"
         command: install
