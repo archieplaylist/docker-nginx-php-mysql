@@ -14,8 +14,12 @@ help:
 	@echo "  code-sniff          Check the API with PHP Code Sniffer (PSR2)"
 	@echo "  clean               Clean directories for reset"
 	@echo "  composer-up         Update PHP dependencies with composer"
-	@echo "  docker-start        Create and start containers"
-	@echo "  docker-stop         Stop and clear all services"
+	@echo "  docker-pull          Pull latest versions of all Docker images"
+	@echo "  docker-update        Pull all images and rebuild PHP-FPM"
+	@echo "  docker-start         Create and start containers"
+	@echo "  docker-stop          Stop and clear all services"
+	@echo "  php-build            Build PHP-FPM image from Dockerfile"
+	@echo "  php-rebuild          Force rebuild PHP-FPM image (no cache)"
 	@echo "  gen-certs           Generate SSL certificates"
 	@echo "  logs                Follow log output"
 	@echo "  mariadb-dump        Create backup of MariaDB databases"
@@ -59,8 +63,29 @@ code-sniff:
 composer-up:
 	@docker run --rm -v $(shell pwd)/web/app:/app composer update
 
-docker-start: init
+docker-start: init php-build
 	docker-compose up -d
+
+php-build:
+	@echo "Building PHP-FPM image (archieplaylist/php-fpm:$(PHP_VERSION))..."
+	docker build -t archieplaylist/php-fpm:$(PHP_VERSION) .
+
+php-rebuild:
+	@echo "Force rebuilding PHP-FPM image (archieplaylist/php-fpm:$(PHP_VERSION))..."
+	docker build --no-cache -t archieplaylist/php-fpm:$(PHP_VERSION) .
+
+docker-pull:
+	@echo "Pulling latest versions of all Docker images..."
+	docker pull nginx:alpine
+	docker pull composer
+	docker pull mariadb:$(MARIADB_VERSION)
+	docker pull mysql:$(MYSQL_VERSION)
+	docker pull postgres:$(POSTGRES_VERSION)
+	docker pull jacoelho/generate-certificate
+	@echo "Done."
+
+docker-update: docker-pull php-rebuild
+	@echo "All images updated."
 
 docker-stop:
 	@docker-compose down -v

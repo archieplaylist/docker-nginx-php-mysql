@@ -150,6 +150,53 @@ cd docker-nginx-php-mysql
 
 ___
 
+## Build & Update Docker Images
+
+This project uses a custom **PHP-FPM** image built from the local `Dockerfile`, plus several pre-built images pulled from Docker Hub.
+
+### PHP-FPM Image
+
+The `Dockerfile` builds a PHP 8.5-FPM image with the following extensions:
+
+- **Database**: mysqli, pdo_mysql, pdo_pgsql, pgsql
+- **Caching**: memcached, redis
+- **Image processing**: gd, imagick
+- **Other**: xdebug, mongodb, bcmath, bz2, calendar, exif, gettext, soap, xsl, sockets, zip, intl, ldap
+
+#### Build the PHP-FPM image
+
+```sh
+make php-build
+```
+
+#### Force rebuild (no cache)
+
+```sh
+make php-rebuild
+```
+
+### Update all Docker images
+
+Pull the latest versions of all pre-built images (nginx, composer, mariadb, mysql, postgres, etc.):
+
+```sh
+make docker-pull
+```
+
+### Update everything (pull + rebuild PHP)
+
+```sh
+make docker-update
+```
+
+### Verify installed PHP extensions
+
+```sh
+docker exec php php -m
+```
+
+___
+
 ## Configure Nginx With SSL Certificates
 
 You can change the host name by editing the `.env` file.
